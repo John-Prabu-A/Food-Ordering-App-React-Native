@@ -3,15 +3,26 @@ import { View, Text, StyleSheet, TextInput, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { defaultPizzaImage } from "@/src/components/ProductListItem";
 import Button from "@/src/components/Button";
 import { Product } from "@/src/types";
+import products from "@/assets/data/products";
 
 export default function CreateItem() {
+  const { id } = useLocalSearchParams();
+  const isUpdating = !!id;
+
+  // TODO: Replace with actual db call
+  const item = products.find((product) => product.id.toString() === id);
+
   const [localImage, setLocalImage] = useState<string | null>(
-    defaultPizzaImage
+    isUpdating ? item?.image ?? defaultPizzaImage : defaultPizzaImage
   );
+
+  const localId = isUpdating ? +id : 0;
+  const localTitle = isUpdating ? item?.name : "";
+  const localPrice = isUpdating ? item?.price : 0;
 
   const pickImage = async (
     setFieldValue: (field: string, value: any) => void
@@ -44,6 +55,26 @@ export default function CreateItem() {
     // TODO: Implement create item logic in db
   };
 
+  const updateItem = (values: Product) => {
+    console.warn("Updating Item with values:", values);
+    // TODO: Implement update item logic in db
+  };
+
+  const onDelete = () => {
+    console.warn("Deleting Item with id:", localId);
+    // TODO: Implement delete item logic in db
+  };
+
+  const onConfirmDelete = () => {
+    Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      { text: "Delete", style: "destructive", onPress: onDelete },
+    ]);
+  };
+
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Title is required"),
     price: Yup.number()
@@ -54,9 +85,14 @@ export default function CreateItem() {
 
   return (
     <Formik
-      initialValues={{ id: 0, image: null, name: "", price: 0 }}
+      initialValues={{
+        id: localId,
+        image: localImage,
+        name: localTitle ?? "",
+        price: localPrice ?? 0,
+      }}
       onSubmit={(values: Product, { resetForm }) => {
-        createItem(values);
+        isUpdating ? createItem(values) : updateItem(values);
         resetForm();
         setLocalImage(defaultPizzaImage);
       }}
@@ -72,7 +108,9 @@ export default function CreateItem() {
         touched,
       }) => (
         <View style={styles.container}>
-          <Stack.Screen options={{ title: "Create Item" }} />
+          <Stack.Screen
+            options={{ title: isUpdating ? "Update Item" : "Create Item" }}
+          />
 
           <Image
             style={styles.image}
@@ -97,11 +135,11 @@ export default function CreateItem() {
 
           <Text style={styles.label}>Price ($)</Text>
           <TextInput
-            value={values.price.toString()}
+            value={values.price !== 0 ? values.price.toString() : ""}
             onChangeText={handleChange("price")}
             onBlur={handleBlur("price")}
             style={styles.textInput}
-            placeholder="$9.99"
+            placeholder="9.99"
             keyboardType="numeric"
           />
           {touched.price && errors.price && (
@@ -109,9 +147,14 @@ export default function CreateItem() {
           )}
 
           <Button
-            text="Create"
+            text={isUpdating ? "Update" : "Create"}
             onPress={handleSubmit as unknown as () => void}
           />
+          {isUpdating && (
+            <Text onPress={onConfirmDelete} style={styles.textButton}>
+              Delete
+            </Text>
+          )}
         </View>
       )}
     </Formik>
@@ -148,5 +191,10 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginTop: 5,
+  },
+  textButton: {
+    color: "#ff2c2c",
+    textAlign: "center",
+    fontSize: 18,
   },
 });
