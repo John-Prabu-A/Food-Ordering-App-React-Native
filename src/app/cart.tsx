@@ -14,6 +14,7 @@ const CartScreen = () => {
         renderItem={({ item }) => (
           <CartListItem key={item.id} cartItem={item} />
         )}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{ gap: 10 }}
       />
       <Text style={{ marginTop: 20, fontSize: 18, fontWeight: "bold" }}>

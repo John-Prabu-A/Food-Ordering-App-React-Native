@@ -12,6 +12,7 @@ export default function OrdersScreen() {
         data={orders}
         renderItem={({ item }) => <OrderListItem order={item} />}
         contentContainerStyle={{ gap: 10, padding: 10 }}
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );

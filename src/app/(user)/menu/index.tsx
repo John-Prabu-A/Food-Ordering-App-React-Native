@@ -10,6 +10,7 @@ export default function MenuScreen() {
       renderItem={({ item }) => (
         <ProductListItem key={item.id} product={item} />
       )}
+      keyExtractor={(item) => item.id.toString()}
       numColumns={2}
       contentContainerStyle={{ gap: 10, padding: 10 }}
       columnWrapperStyle={{ gap: 10 }}
