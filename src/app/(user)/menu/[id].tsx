@@ -19,7 +19,6 @@ const ProductDetailsScreen = () => {
   if (!product) {
     return (
       <View>
-        <Stack.Screen options={{ title: `Product Details` }} />
         <Text>Product not found</Text>
       </View>
     );
@@ -50,13 +49,13 @@ const ProductDetailsScreen = () => {
                 backgroundColor: selectedSize === size ? "gainsboro" : "white",
               },
             ]}
+            key={size}
           >
             <Text
               style={[
                 styles.sizeText,
                 { color: selectedSize === size ? "black" : "grey" },
               ]}
-              key={size}
             >
               {size}
             </Text>
