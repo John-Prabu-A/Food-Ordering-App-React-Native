@@ -2,8 +2,16 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Stack } from "expo-router";
+import { Redirect, Stack, useLocalSearchParams } from "expo-router";
 import Button from "@/src/components/Button";
+import { supabase } from "@/src/lib/supabase";
+import Animated, {
+  Easing,
+  useSharedValue,
+  withTiming,
+  useAnimatedStyle,
+  runOnJS,
+} from "react-native-reanimated";
 
 type UserData = {
   email: string;
@@ -11,24 +19,74 @@ type UserData = {
 };
 
 export default function AuthForm() {
-  const [isSignUp, setIsSignup] = useState(true);
+  const [isSignUp, setIsSignUp] = useState(!useLocalSearchParams());
+  const [loading, setLoading] = useState(false);
+  const animationValue = useSharedValue(0);
 
-  const toggleFormType = () => setIsSignup(!isSignUp);
-
-  const onSignIn = (values: UserData) => {
-    // TODO: Implement sign-in logic
-    Alert.alert("Sign In", JSON.stringify(values));
+  const toggleFormType = () => {
+    animationValue.value = withTiming(
+      1,
+      {
+        duration: 300,
+        easing: Easing.inOut(Easing.ease),
+      },
+      () => {
+        runOnJS(setIsSignUp)(!isSignUp);
+        animationValue.value = withTiming(0, {
+          duration: 300,
+          easing: Easing.inOut(Easing.ease),
+        });
+      }
+    );
   };
 
-  const onSignUp = (values: UserData) => {
-    // TODO: Implement sign-up logic
-    Alert.alert("Sign Up", JSON.stringify(values));
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: withTiming(animationValue.value * 3000, {
+            duration: 300,
+            easing: Easing.inOut(Easing.ease),
+          }),
+        },
+      ],
+      opacity: withTiming(animationValue.value === 1 ? 0 : 1, {
+        duration: 300,
+      }),
+    };
+  });
+
+  const onSignIn = async (values: UserData) => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    });
+    if (error) {
+      setLoading(false);
+      Alert.alert("Sign In Error", error.message);
+      return;
+    }
+    setLoading(false);
+    <Redirect href="/(user)/menu" />;
+  };
+
+  const onSignUp = async (values: UserData) => {
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+    });
+    if (error) {
+      setLoading(false);
+      Alert.alert("Sign Up Error", error.message);
+      return;
+    }
+    setLoading(false);
   };
 
   const handleAuth = (values: UserData) => {
-    {
-      isSignUp ? onSignIn(values) : onSignUp(values);
-    }
+    isSignUp ? onSignUp(values) : onSignIn(values);
   };
 
   const validationSchema = Yup.object().shape({
@@ -61,41 +119,56 @@ export default function AuthForm() {
         <View style={styles.container}>
           <Stack.Screen options={{ title: isSignUp ? "Sign Up" : "Sign In" }} />
 
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            value={values.email}
-            onChangeText={handleChange("email")}
-            onBlur={handleBlur("email")}
-            style={styles.textInput}
-            placeholder="Email"
-            keyboardType="email-address"
-          />
-          <Text style={styles.errorText}>
-            {touched.email && errors.email ? errors.email : ""}
-          </Text>
+          <Animated.View style={[styles.form, animatedStyle]}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              value={values.email}
+              onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
+              style={styles.textInput}
+              placeholder="Email"
+              keyboardType="email-address"
+            />
+            <Text style={styles.errorText}>
+              {touched.email && errors.email ? errors.email : ""}
+            </Text>
 
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            value={values.password}
-            onChangeText={handleChange("password")}
-            onBlur={handleBlur("password")}
-            style={styles.textInput}
-            placeholder="Password"
-            secureTextEntry
-          />
-          <Text style={styles.errorText}>
-            {touched.password && errors.password ? errors.password : ""}
-          </Text>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              value={values.password}
+              onChangeText={handleChange("password")}
+              onBlur={handleBlur("password")}
+              style={styles.textInput}
+              placeholder="Password"
+              secureTextEntry
+            />
+            <Text style={styles.errorText}>
+              {touched.password && errors.password ? errors.password : ""}
+            </Text>
 
-          <Button
-            text={isSignUp ? "Sign Up" : "Sign In"}
-            onPress={handleSubmit as unknown as () => void}
-          />
-          <Text onPress={toggleFormType} style={styles.textButton}>
-            {isSignUp
-              ? "Already have an account? Sign In"
-              : "Don't have an account? Sign Up"}
-          </Text>
+            <Button
+              disabled={loading}
+              text={
+                isSignUp
+                  ? loading
+                    ? "Signing Up..."
+                    : "Sign Up"
+                  : loading
+                    ? "Signing in..."
+                    : "Sign In"
+              }
+              onPress={handleSubmit as unknown as () => void}
+            />
+            <Text
+              onPress={toggleFormType}
+              disabled={loading}
+              style={styles.textButton}
+            >
+              {isSignUp
+                ? "Already have an account? Sign In"
+                : "Don't have an account? Sign Up"}
+            </Text>
+          </Animated.View>
         </View>
       )}
     </Formik>
@@ -106,6 +179,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
+    padding: 10,
+  },
+  form: {
     padding: 10,
   },
   label: {
