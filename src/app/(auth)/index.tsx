@@ -67,6 +67,7 @@ export default function AuthForm() {
       Alert.alert("Sign In Error", error.message);
       return;
     }
+    console.log("userData : ", values);
     setLoading(false);
     <Redirect href="/(user)/menu" />;
   };

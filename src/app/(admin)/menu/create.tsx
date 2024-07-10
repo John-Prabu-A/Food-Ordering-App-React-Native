@@ -1,33 +1,97 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, Image, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import * as FileSystem from "expo-file-system";
+import { randomUUID } from "expo-crypto";
+import { decode } from "base64-arraybuffer";
+import {
+  useDeleteProduct,
+  useInsertProduct,
+  useProduct,
+  useUpdateProduct,
+} from "@/src/api/products";
+import { supabase } from "@/src/lib/supabase";
 import { defaultPizzaImage } from "@/src/components/ProductListItem";
 import Button from "@/src/components/Button";
-import { Product } from "@/src/types";
-import products from "@/assets/data/products";
 
-export default function CreateItem() {
-  const { id } = useLocalSearchParams();
-  const isUpdating = !!id;
+const CreateProductScreen = () => {
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [errors, setErrors] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // TODO: Replace with actual db call
-  const item = products.find((product) => product.id.toString() === id);
-
-  const [localImage, setLocalImage] = useState<string | null>(
-    isUpdating ? item?.image ?? defaultPizzaImage : defaultPizzaImage
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(
+    !idString ? "" : typeof idString === "string" ? idString : idString?.[0]
   );
+  const isUpdating = !!idString;
 
-  const localId = isUpdating ? +id : 0;
-  const localTitle = isUpdating ? item?.name : "";
-  const localPrice = isUpdating ? item?.price : 0;
+  const { mutate: insertProduct } = useInsertProduct();
+  const { mutate: updateProduct } = useUpdateProduct();
+  const { data: updatingProduct, isLoading } = useProduct(id);
+  const { mutate: deleteProduct } = useDeleteProduct();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    if (updatingProduct) {
+      setName(updatingProduct.name);
+      setPrice(updatingProduct.price.toString());
+      setImage(updatingProduct.image);
+    }
+    setLoading(false);
+  }, [updatingProduct]);
+
+  const resetFields = () => {
+    setName("");
+    setPrice("");
+  };
+
+  const onCreate = async () => {
+    const imagePath = await uploadImage();
+    console.log("imagePath", imagePath);
+    insertProduct(
+      { name, price: parseFloat(price), image: imagePath },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      }
+    );
+  };
+
+  const onUpdate = async () => {
+    const imagePath = await uploadImage();
+    updateProduct(
+      { id, name, price: parseFloat(price), image: imagePath },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      }
+    );
+  };
 
   const pickImage = async (
     setFieldValue: (field: string, value: any) => void
   ) => {
-    // Request permission to access media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need camera roll permissions to make this work!");
@@ -41,28 +105,42 @@ export default function CreateItem() {
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      setLocalImage(uri);
+      setImage(uri);
       setFieldValue("image", uri);
     }
   };
 
-  const createItem = (values: Product) => {
-    console.warn("Creating Item with values:", values);
-    // TODO: Implement create item logic in db
-  };
+  const onDelete = async () => {
+    setDeleting(true);
+    if (updatingProduct?.image) {
+      try {
+        console.log("Attempting to delete image:", updatingProduct.image);
 
-  const updateItem = (values: Product) => {
-    console.warn("Updating Item with values:", values);
-    // TODO: Implement update item logic in db
-  };
+        const { data, error } = await supabase.storage
+          .from("product-images")
+          .remove([updatingProduct.image]);
 
-  const onDelete = () => {
-    console.warn("Deleting Item with id:", localId);
-    // TODO: Implement delete item logic in db
+        if (error) {
+          console.error("Error deleting image:", error.message);
+        } else {
+          console.log("Image deleted successfully:", data);
+        }
+      } catch (error: any) {
+        console.error("Error checking or deleting image:", error.message);
+      }
+    } else {
+      console.log("No image to delete.");
+    }
+
+    deleteProduct(id, {
+      onSuccess: () => {
+        setDeleting(false);
+        resetFields();
+        router.replace("/(admin)");
+      },
+    });
   };
 
   const onConfirmDelete = () => {
@@ -75,6 +153,30 @@ export default function CreateItem() {
     ]);
   };
 
+  const uploadImage = async () => {
+    if (!image?.startsWith("file://")) {
+      return;
+    }
+
+    const base64 = await FileSystem.readAsStringAsync(image, {
+      encoding: "base64",
+    });
+    const filePath = `${randomUUID()}.png`;
+    const contentType = "image/png";
+
+    const { data, error } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, decode(base64), { contentType });
+
+    if (error) {
+      console.error("Error uploading image", error);
+    }
+
+    if (data) {
+      return data.path;
+    }
+  };
+
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Title is required"),
     price: Yup.number()
@@ -83,18 +185,32 @@ export default function CreateItem() {
       .required("Price is required"),
   });
 
+  if (loading || (isLoading && isUpdating)) {
+    return <ActivityIndicator />;
+  }
+
   return (
     <Formik
       initialValues={{
-        id: localId,
-        image: localImage,
-        name: localTitle ?? "",
-        price: localPrice ?? 0,
+        id: id,
+        image: image ?? defaultPizzaImage,
+        name: name ?? "",
+        price: price ? parseFloat(price.toString()) : 0,
       }}
-      onSubmit={(values: Product, { resetForm }) => {
-        isUpdating ? createItem(values) : updateItem(values);
-        resetForm();
-        setLocalImage(defaultPizzaImage);
+      onSubmit={async () => {
+        console.log("Submitting..");
+
+        setProcessing(true);
+        console.log("process start..");
+        if (isUpdating) {
+          console.log("Updating..");
+          await onUpdate();
+        } else {
+          console.log("Creating..");
+          await onCreate();
+        }
+        setProcessing(false);
+        console.log("process end..");
       }}
       validationSchema={validationSchema}
     >
@@ -117,6 +233,7 @@ export default function CreateItem() {
             source={{ uri: values.image ?? defaultPizzaImage }}
           />
           <Button
+            disabled={processing || loading || deleting}
             text="Pick an image"
             onPress={() => pickImage(setFieldValue)}
           />
@@ -124,7 +241,10 @@ export default function CreateItem() {
           <Text style={styles.label}>Title</Text>
           <TextInput
             value={values.name}
-            onChangeText={handleChange("name")}
+            onChangeText={(text) => {
+              setFieldValue("name", text);
+              setName(text);
+            }}
             onBlur={handleBlur("name")}
             style={styles.textInput}
             placeholder="Product Title"
@@ -135,8 +255,11 @@ export default function CreateItem() {
 
           <Text style={styles.label}>Price ($)</Text>
           <TextInput
-            value={values.price !== 0 ? values.price.toString() : ""}
-            onChangeText={handleChange("price")}
+            value={values.price === 0 ? "" : values.price.toString()}
+            onChangeText={(text) => {
+              setFieldValue("price", text);
+              setPrice(text);
+            }}
             onBlur={handleBlur("price")}
             style={styles.textInput}
             placeholder="9.99"
@@ -147,19 +270,35 @@ export default function CreateItem() {
           )}
 
           <Button
-            text={isUpdating ? "Update" : "Create"}
+            text={
+              isUpdating
+                ? processing
+                  ? "Updating..."
+                  : "Update"
+                : processing
+                  ? "Creating..."
+                  : "Create"
+            }
+            disabled={processing || loading || deleting}
+            style={{ opacity: processing ? 0.5 : 1 }}
             onPress={handleSubmit as unknown as () => void}
           />
           {isUpdating && (
-            <Text onPress={onConfirmDelete} style={styles.textButton}>
-              Delete
+            <Text
+              onPress={onConfirmDelete}
+              disabled={deleting || processing || loading}
+              style={styles.textButton}
+            >
+              {deleting ? "Deleting..." : "Delete"}
             </Text>
           )}
         </View>
       )}
     </Formik>
   );
-}
+};
+
+export default CreateProductScreen;
 
 const styles = StyleSheet.create({
   container: {
