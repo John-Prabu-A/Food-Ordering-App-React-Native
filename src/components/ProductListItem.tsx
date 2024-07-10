@@ -1,10 +1,10 @@
 import { StyleSheet, Text, Image, Pressable } from "react-native";
-import { Product } from "@/src/types";
 import { Link, useSegments } from "expo-router";
 import RemoteImage from "./RemoteImage";
+import { Tables } from "../database.types";
 
 interface ProductListItemProps {
-  product: Product;
+  product: Tables<"products">;
 }
 
 export const defaultPizzaImage =
