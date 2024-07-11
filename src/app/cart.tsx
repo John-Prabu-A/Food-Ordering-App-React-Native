@@ -1,4 +1,10 @@
-import { View, Text, Platform, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  Platform,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useCart } from "@providers/CartProvider";
@@ -6,7 +12,15 @@ import CartListItem from "../components/CartListItem";
 import Button from "../components/Button";
 
 const CartScreen = () => {
-  const { items, total } = useCart();
+  const { items, total, checkout, isCartProcessing } = useCart();
+
+  if (isCartProcessing) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
   return (
     <View style={{ flexDirection: "column", padding: 10 }}>
       <FlatList
@@ -18,12 +32,9 @@ const CartScreen = () => {
         contentContainerStyle={{ gap: 10 }}
       />
       <Text style={{ marginTop: 20, fontSize: 18, fontWeight: "bold" }}>
-        Total : ${total}
+        Total : ${total.toFixed(2)}
       </Text>
-      <Button
-        text="Checkout"
-        onPress={() => console.warn("Checkout is being process...")}
-      />
+      <Button text="Checkout" onPress={checkout} />
       <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
     </View>
   );

@@ -1,11 +1,25 @@
-import { FlatList, StyleSheet } from "react-native";
-
-import EditScreenInfo from "@/src/components/EditScreenInfo";
+import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
 import { Text, View } from "@/src/components/Themed";
 import OrderListItem from "@/src/components/OrderListItem";
-import orders from "@/assets/data/orders";
+import { useMyOrderList } from "@/src/api/orders";
 
 export default function OrdersScreen() {
+  const { data: orders, isLoading, error } = useMyOrderList();
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{error.message}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList

@@ -7,11 +7,11 @@ import {
   useState,
 } from "react";
 import { supabase } from "../lib/supabase";
-import { Profile } from "../types";
+import { InsertTables, Profile } from "../types";
 
 type AuthData = {
   session: Session | null;
-  profile: Profile | null;
+  profile: InsertTables<"profiles"> | null;
   loading: boolean;
   isAdmin: boolean;
 };

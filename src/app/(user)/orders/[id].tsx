@@ -1,39 +1,53 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { useOrderDetails } from "@/src/api/orders";
+import { useUpdateOrderSubscription } from "@/src/api/orders/subscriptions";
+import OrderItemListItem from "@/src/components/OrderItemListItem";
+import OrderListItem from "@/src/components/OrderListItem";
 import { Stack, useLocalSearchParams } from "expo-router";
-import orders from "../../../../assets/data/orders";
-import OrderItemListItem from "../../../components/OrderItemListItem";
-import OrderListItem from "../../../components/OrderListItem";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
-const OrderDetailScreen = () => {
-  const { id } = useLocalSearchParams();
+export default function OrderDetailsScreen() {
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(
+    !idString ? "" : typeof idString === "string" ? idString : idString[0]
+  );
+  console.log(id);
 
-  const order = orders.find((o) => o.id.toString() === id);
+  const { data: order, isLoading, error } = useOrderDetails(id);
 
+  useUpdateOrderSubscription(id); // realtime order Status update
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{error.message}</Text>
+      </View>
+    );
+  }
   if (!order) {
-    return <Text>Order not found!</Text>;
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Order not found</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ title: `Order #${order.id}` }} />
+    <View style={{ padding: 10, gap: 20, flex: 1 }}>
+      <Stack.Screen options={{ title: `Order #${id}` }} />
 
       <FlatList
-        data={order.order_items}
+        data={order?.order_items}
         renderItem={({ item }) => <OrderItemListItem item={item} />}
         contentContainerStyle={{ gap: 10 }}
-        ListHeaderComponent={<OrderListItem order={order} />}
-        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={() => <OrderListItem order={order} />}
       />
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    flex: 1,
-    gap: 10,
-  },
-});
-
-export default OrderDetailScreen;
+}

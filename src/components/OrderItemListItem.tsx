@@ -1,21 +1,39 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import React from "react";
 import Colors from "../constants/Colors";
-import { OrderItem } from "../types";
+import { Tables } from "../types";
 import { defaultPizzaImage } from "./ProductListItem";
+import RemoteImage from "./RemoteImage";
 
 type OrderItemListItemProps = {
-  item: OrderItem;
+  item: {
+    created_at: string;
+    id: number;
+    order_id: number;
+    product_id: number;
+    quantity: number;
+    size: string;
+    products: {
+      created_at: string;
+      id: number;
+      image: string | null;
+      name: string;
+      price: number;
+    } | null;
+  };
 };
 
 const OrderItemListItem = ({ item }: OrderItemListItemProps) => {
+  if (!item.products) return null;
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: item.products.image || defaultPizzaImage }}
+      <RemoteImage
+        path={item.products.image}
+        fallback={defaultPizzaImage}
         style={styles.image}
         resizeMode="contain"
       />
+
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.products.name}</Text>
         <View style={styles.subtitleContainer}>
@@ -35,7 +53,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 10,
     padding: 5,
-    paddingHorizontal: 10,
     flex: 1,
     flexDirection: "row",
     alignItems: "center",

@@ -1,3 +1,12 @@
+import { useUpdateOrderSubscription } from "@/src/api/orders/subscriptions";
+import { useProduct, useUpdateProduct } from "@/src/api/products";
+import Button from "@/src/components/Button";
+import { defaultPizzaImage } from "@/src/components/ProductListItem";
+import RemoteImage from "@/src/components/RemoteImage";
+import { useCart } from "@/src/providers/CartProvider";
+import { PizzaSize } from "@/src/types";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,54 +15,64 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 
-import { defaultPizzaImage } from "@/src/components/ProductListItem";
-import Button from "@/src/components/Button";
-import { useCart } from "@/src/providers/CartProvider";
-import { PizzaSize } from "@/src/types";
-import { useProduct } from "@/src/api/products";
+const sizes: PizzaSize[] = ["S", "M", "L", "XL"];
 
 const ProductDetailsScreen = () => {
-  const router = useRouter();
-  const { addItem } = useCart();
-  const sizes: PizzaSize[] = ["S", "M", "L", "XL"];
-  const [selectedSize, setSelectedSize] = useState<PizzaSize>("M");
-
-  const { idString } = useLocalSearchParams();
+  const { id: idString } = useLocalSearchParams();
   const id = parseFloat(
     !idString ? "" : typeof idString === "string" ? idString : idString[0]
   );
 
+  // useUpdateOrderSubscription(id);
   const { data: product, error, isLoading } = useProduct(id);
 
-  if (isLoading) {
-    return <ActivityIndicator />;
-  }
+  const { addItem } = useCart();
 
-  if (error || !product) {
-    return (
-      <View>
-        <Stack.Screen options={{ title: `Product Details` }} />
-        <Text>{error ? error.message : "Product not found"}</Text>
-      </View>
-    );
-  }
+  const router = useRouter();
+
+  const [selectedSize, setSelectedSize] = useState<PizzaSize>("M");
 
   const addToCart = () => {
+    if (!product) {
+      return;
+    }
     addItem(product, selectedSize);
     router.push("/cart");
   };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{error.message}</Text>
+      </View>
+    );
+  }
+  if (!product) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Product not found</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: product.name }} />
-      <Image
+
+      <RemoteImage
+        path={product?.image}
+        fallback={defaultPizzaImage}
         style={styles.image}
-        source={{ uri: product.image || defaultPizzaImage }}
       />
-      <Text style={{ fontWeight: "bold" }}>Select size</Text>
+
+      <Text>Select size</Text>
       <View style={styles.sizes}>
         {sizes.map((size) => (
           <Pressable
@@ -71,7 +90,9 @@ const ProductDetailsScreen = () => {
             <Text
               style={[
                 styles.sizeText,
-                { color: selectedSize === size ? "black" : "grey" },
+                {
+                  color: selectedSize === size ? "black" : "gray",
+                },
               ]}
             >
               {size}
@@ -79,7 +100,8 @@ const ProductDetailsScreen = () => {
           </Pressable>
         ))}
       </View>
-      <Text style={styles.price}>Price: ${product.price} </Text>
+
+      <Text style={styles.price}>${product.price}</Text>
       <Button onPress={addToCart} text="Add to cart" />
     </View>
   );
@@ -96,10 +118,11 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
   },
   price: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     marginTop: "auto",
   },
+
   sizes: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -109,13 +132,13 @@ const styles = StyleSheet.create({
     backgroundColor: "gainsboro",
     width: 50,
     aspectRatio: 1,
-    justifyContent: "center",
-    alignItems: "center",
     borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
   },
   sizeText: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "500",
   },
 });
 

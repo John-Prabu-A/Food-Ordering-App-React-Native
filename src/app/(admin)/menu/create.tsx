@@ -7,6 +7,7 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
@@ -24,11 +25,12 @@ import {
 import { supabase } from "@/src/lib/supabase";
 import { defaultPizzaImage } from "@/src/components/ProductListItem";
 import Button from "@/src/components/Button";
+import RemoteImage from "@/src/components/RemoteImage";
+import { FontAwesome } from "@expo/vector-icons";
 
 const CreateProductScreen = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [errors, setErrors] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -227,11 +229,47 @@ const CreateProductScreen = () => {
           <Stack.Screen
             options={{ title: isUpdating ? "Update Item" : "Create Item" }}
           />
-
-          <Image
-            style={styles.image}
-            source={{ uri: values.image ?? defaultPizzaImage }}
-          />
+          <Pressable
+            onPress={() => pickImage(setFieldValue)}
+            style={{
+              // width: 125,
+              // height: 100,
+              justifyContent: "center",
+              alignSelf: "center",
+              paddingBottom: 15,
+              marginBottom: 15,
+            }}
+          >
+            {values.image.startsWith("file://") ? (
+              <Image
+                style={styles.image}
+                source={{ uri: values.image ?? defaultPizzaImage }}
+              />
+            ) : (
+              <RemoteImage
+                path={values.image}
+                fallback={defaultPizzaImage}
+                bucketName="product-images"
+                style={styles.image}
+              />
+            )}
+            <FontAwesome
+              name={"pencil-square-o"}
+              size={25}
+              color="black"
+              style={{
+                position: "absolute",
+                right: 10,
+                bottom: 20,
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                borderRadius: 5,
+                padding: 5,
+                paddingBottom: 2,
+                alignContent: "center",
+                justifyContent: "center",
+              }}
+            />
+          </Pressable>
           <Button
             disabled={processing || loading || deleting}
             text="Pick an image"

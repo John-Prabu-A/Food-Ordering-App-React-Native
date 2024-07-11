@@ -5,9 +5,15 @@ import { supabase } from "../lib/supabase";
 type RemoteImageProps = {
   path?: string | null;
   fallback: string;
+  bucketName?: string;
 } & Omit<ComponentProps<typeof Image>, "source">;
 
-const RemoteImage = ({ path, fallback, ...imageProps }: RemoteImageProps) => {
+const RemoteImage = ({
+  path,
+  fallback,
+  bucketName,
+  ...imageProps
+}: RemoteImageProps) => {
   const [image, setImage] = useState("");
 
   useEffect(() => {
@@ -15,7 +21,7 @@ const RemoteImage = ({ path, fallback, ...imageProps }: RemoteImageProps) => {
     (async () => {
       setImage("");
       const { data, error } = await supabase.storage
-        .from("product-images")
+        .from(bucketName || "product-images")
         .download(path);
 
       if (error) {

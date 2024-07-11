@@ -69,7 +69,7 @@ export default function AuthForm() {
     }
     console.log("userData : ", values);
     setLoading(false);
-    <Redirect href="/(user)/menu" />;
+    <Redirect href="/" />;
   };
 
   const onSignUp = async (values: UserData) => {

@@ -23,11 +23,25 @@ const ProductDetailsScreen = () => {
   const { data: product, error, isLoading } = useProduct(id);
 
   if (isLoading) {
-    return <ActivityIndicator />;
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
-
   if (error) {
-    return <Text>Failed to fetch products</Text>;
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{error.message}</Text>
+      </View>
+    );
+  }
+  if (!product) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Product not found</Text>
+      </View>
+    );
   }
 
   return (

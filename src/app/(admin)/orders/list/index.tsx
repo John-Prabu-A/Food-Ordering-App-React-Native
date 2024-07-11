@@ -1,11 +1,30 @@
-import { FlatList, StyleSheet } from "react-native";
-
-import EditScreenInfo from "@/src/components/EditScreenInfo";
-import { Text, View } from "@/src/components/Themed";
+import { ActivityIndicator, FlatList, StyleSheet, Text } from "react-native";
+import { View } from "@/src/components/Themed";
 import OrderListItem from "@/src/components/OrderListItem";
-import orders from "@/assets/data/orders";
+import { useAdminOrderList } from "@/src/api/orders";
+import { useInsertOrderSubscription } from "@/src/api/orders/subscriptions";
 
 export default function OrdersScreen() {
+  useInsertOrderSubscription(); // realtime order Status update
+  const {
+    data: orders,
+    isLoading,
+    error,
+  } = useAdminOrderList({ archived: false });
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{error.message}</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.container}>
       <FlatList
