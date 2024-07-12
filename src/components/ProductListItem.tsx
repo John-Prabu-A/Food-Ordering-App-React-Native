@@ -8,7 +8,7 @@ interface ProductListItemProps {
 }
 
 export const defaultPizzaImage =
-  "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png";
+  "https://tjfrqdpfhcstpgdtwido.supabase.co/storage/v1/object/sign/product-images/defaultPizzaImage.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9kZWZhdWx0UGl6emFJbWFnZS5wbmciLCJpYXQiOjE3MjA3ODg5MjQsImV4cCI6MTc1MjMyNDkyNH0.bNDGzEVZzwOWtJsyhW4I8ctRouECt55Aw3lv4vkrDbU&t=2024-07-12T12%3A55%3A24.823Z";
 
 const ProductListItem = ({ product }: ProductListItemProps) => {
   const segments = useSegments();
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flex: 1,
     maxWidth: "50%",
-    margin: 5,
+    // margin: 5,
   },
   title: {
     fontSize: 20,

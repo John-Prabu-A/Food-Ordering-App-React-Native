@@ -5,7 +5,7 @@ import { Link, Redirect, Stack } from "expo-router";
 import { Pressable } from "react-native";
 
 export default function MenuScreen() {
-  const { session } = useAuth();
+  const { session, isAdmin } = useAuth();
 
   if (!session) {
     return <Redirect href="/" />;
@@ -28,6 +28,21 @@ export default function MenuScreen() {
             </Pressable>
           </Link>
         ),
+        headerLeft: () =>
+          isAdmin && (
+            <Link href="/" asChild>
+              <Pressable>
+                {({ pressed }) => (
+                  <FontAwesome
+                    name="home"
+                    size={25}
+                    color={Colors.light.tint}
+                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            </Link>
+          ),
       }}
     >
       <Stack.Screen name="index" options={{ title: "Menu" }} />

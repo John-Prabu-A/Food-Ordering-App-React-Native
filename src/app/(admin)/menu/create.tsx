@@ -72,7 +72,11 @@ const CreateProductScreen = () => {
       {
         onSuccess: () => {
           resetFields();
+          console.log("Success.. fields resetted.");
           router.back();
+          console.log("Back..");
+
+          setProcessing(false);
         },
       }
     );
@@ -211,7 +215,6 @@ const CreateProductScreen = () => {
           console.log("Creating..");
           await onCreate();
         }
-        setProcessing(false);
         console.log("process end..");
       }}
       validationSchema={validationSchema}
@@ -231,6 +234,7 @@ const CreateProductScreen = () => {
           />
           <Pressable
             onPress={() => pickImage(setFieldValue)}
+            disabled={processing || loading || deleting}
             style={{
               // width: 125,
               // height: 100,
@@ -279,6 +283,8 @@ const CreateProductScreen = () => {
           <Text style={styles.label}>Title</Text>
           <TextInput
             value={values.name}
+            // disable editing while processing
+            editable={!processing}
             onChangeText={(text) => {
               setFieldValue("name", text);
               setName(text);
@@ -294,6 +300,7 @@ const CreateProductScreen = () => {
           <Text style={styles.label}>Price ($)</Text>
           <TextInput
             value={values.price === 0 ? "" : values.price.toString()}
+            editable={!processing}
             onChangeText={(text) => {
               setFieldValue("price", text);
               setPrice(text);

@@ -50,14 +50,16 @@ const ProfilePage = () => {
   const [processing, setProcessing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const defaultProfileImage = "defaultProfilePic.png";
+  const defaultProfileImage =
+    "https://tjfrqdpfhcstpgdtwido.supabase.co/storage/v1/object/sign/avatars/defaultProfilePic.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJhdmF0YXJzL2RlZmF1bHRQcm9maWxlUGljLnBuZyIsImlhdCI6MTcyMDc4MjEyNiwiZXhwIjoxNzUyMzE4MTI2fQ.PkIANpbdkCtY-z1fp5sK18AetgZYi4LoUu-LW-ZQKjg&t=2024-07-12T11%3A02%3A06.492Z";
 
   useEffect(() => {
+    console.log(avatarUrl);
     if (profile) {
-      setAvatarUrl(profile.avatar_url || defaultProfileImage);
+      setAvatarUrl(profile.avatar_url || "defaultProfilePic.png");
     }
     if (myProfile) {
-      setAvatarUrl(myProfile.avatar_url || defaultProfileImage);
+      setAvatarUrl(myProfile.avatar_url || "defaultProfilePic.png");
     }
     console.log("Profile", profile);
   }, [profile, myProfile]);
@@ -182,10 +184,6 @@ const ProfilePage = () => {
     return <Redirect href="/(auth)" />;
   }
 
-  if (isAdmin) {
-    return <Redirect href="/" />;
-  }
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -247,7 +245,7 @@ const ProfilePage = () => {
                   />
                 ) : (
                   <RemoteImage
-                    path={values.avatarUrl}
+                    path={avatarUrl}
                     fallback={defaultProfileImage}
                     bucketName="profile-images"
                     style={styles.profileImage}
@@ -275,7 +273,7 @@ const ProfilePage = () => {
                     value={values.fullName || ""}
                     onChangeText={handleChange("fullName")}
                     onBlur={handleBlur("fullName")}
-                    placeholder="Enter your full name"
+                    placeholder="eg. John Doe"
                     editable={isEditing}
                   />
                   {touched.fullName && errors.fullName && (
@@ -294,7 +292,7 @@ const ProfilePage = () => {
                     value={values.username || ""}
                     onChangeText={handleChange("username")}
                     onBlur={handleBlur("username")}
-                    placeholder="Enter your username"
+                    placeholder="eg: johndoe123"
                     editable={isEditing}
                   />
                   {touched.username && errors.username && (
@@ -313,7 +311,7 @@ const ProfilePage = () => {
                     value={values.website || ""}
                     onChangeText={handleChange("website")}
                     onBlur={handleBlur("website")}
-                    placeholder="Enter your website"
+                    placeholder="eg: https://example.com"
                     editable={isEditing}
                   />
                   {touched.website && errors.website && (
