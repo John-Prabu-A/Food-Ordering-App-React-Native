@@ -12,6 +12,7 @@ import OrderListItem from "../../../components/OrderListItem";
 import { OrderStatusList } from "@/src/types";
 import Colors from "@/src/constants/Colors";
 import { useOrderDetails, useUpdateOrder } from "@/src/api/orders";
+import { sendOrderStatusNotification } from "@/src/lib/notifications";
 
 const OrderDetailScreen = () => {
   const { id: idString } = useLocalSearchParams();
@@ -27,6 +28,9 @@ const OrderDetailScreen = () => {
       id: id,
       updatedFields: { status },
     });
+    if (order) {
+      sendOrderStatusNotification({ ...order, status });
+    }
   };
 
   if (isLoading) {

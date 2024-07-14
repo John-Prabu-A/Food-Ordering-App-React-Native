@@ -113,6 +113,7 @@ export type Database = {
           full_name: string | null
           group: string
           id: string
+          push_token: string | null
           updated_at: string | null
           username: string | null
           website: string | null
@@ -122,6 +123,7 @@ export type Database = {
           full_name?: string | null
           group?: string
           id: string
+          push_token?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
@@ -131,6 +133,7 @@ export type Database = {
           full_name?: string | null
           group?: string
           id?: string
+          push_token?: string | null
           updated_at?: string | null
           username?: string | null
           website?: string | null
