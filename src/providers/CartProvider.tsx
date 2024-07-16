@@ -6,6 +6,7 @@ import { CartItem } from "../types";
 import { useInsertOrder } from "../api/orders";
 import { useInsertOrderItems } from "../api/order_items";
 import { Alert } from "react-native";
+import { useAuth } from "./AuthProvider";
 
 type Product = Tables<"products">;
 
@@ -29,6 +30,7 @@ const CartContext = createContext<CartType>({
 
 const CartProvider = ({ children }: PropsWithChildren) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const { session } = useAuth();
 
   const { mutate: insertOrder } = useInsertOrder();
   const { mutate: insertOrderItems } = useInsertOrderItems();
@@ -84,7 +86,7 @@ const CartProvider = ({ children }: PropsWithChildren) => {
   const checkout = () => {
     setIsCartProcessing(true);
     insertOrder(
-      { total },
+      { total, user_id: session?.user.id || "" },
       {
         onSuccess: saveOrderItems,
       }

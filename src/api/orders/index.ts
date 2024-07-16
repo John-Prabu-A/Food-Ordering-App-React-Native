@@ -108,7 +108,7 @@ export const useUpdateOrder = () => {
       }
       return updatedOrder;
     },
-    async onSuccess({user_id}, { id, updatedFields }) {
+    async onSuccess({ user_id }, { id, updatedFields }) {
       await queryClient.invalidateQueries({ queryKey: ["orders"] });
       await queryClient.invalidateQueries({ queryKey: ["orders", id] });
     },

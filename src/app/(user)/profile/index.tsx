@@ -37,38 +37,23 @@ type ProfileUpdateValues = {
 
 const ProfilePage = () => {
   const { session, loading, profile } = useAuth();
-
-  if (loading || session === null) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
   const {
     data: myProfile,
     isLoading: isLoadingProfile,
     isError,
-  } = useProfile(session.user.id);
-  console.log(useProfile(profile.id));
+  } = useProfile(profile?.id);
   const updateProfileMutation = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const defaultProfileImage =
-    "https://tjfrqdpfhcstpgdtwido.supabase.co/storage/v1/object/sign/avatars/defaultProfilePic.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJhdmF0YXJzL2RlZmF1bHRQcm9maWxlUGljLnBuZyIsImlhdCI6MTcyMDc4MjEyNiwiZXhwIjoxNzUyMzE4MTI2fQ.PkIANpbdkCtY-z1fp5sK18AetgZYi4LoUu-LW-ZQKjg&t=2024-07-12T11%3A02%3A06.492Z";
-
   useEffect(() => {
-    console.log(avatarUrl);
     if (profile) {
       setAvatarUrl(profile.avatar_url || "defaultProfilePic.png");
     }
     if (myProfile) {
       setAvatarUrl(myProfile.avatar_url || "defaultProfilePic.png");
     }
-    console.log("Profile", profile);
   }, [profile, myProfile]);
 
   const validationSchema = Yup.object().shape({
@@ -95,7 +80,6 @@ const ProfilePage = () => {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      console.log("uri", uri);
       setAvatarUrl(uri);
       setFieldValue("avatarUrl", uri);
     }
@@ -117,7 +101,7 @@ const ProfilePage = () => {
       .upload(filePath, decode(base64), { contentType });
 
     if (error) {
-      console.error("Error uploading image", error);
+      Alert.alert("Error uploading image", error.message);
       return null;
     }
 
@@ -128,9 +112,8 @@ const ProfilePage = () => {
     values: ProfileUpdateValues,
     { setSubmitting }: FormikHelpers<ProfileUpdateValues>
   ) => {
-    if (!profile) {
-      return;
-    }
+    if (!profile) return;
+
     setProcessing(true);
     const avatarPath = await uploadImage(values.avatarUrl as string);
     const updates: UpdateTables<"profiles"> = {
@@ -144,11 +127,9 @@ const ProfilePage = () => {
 
     updateProfileMutation.mutate(updates, {
       onSuccess: () => {
-        console.log("Profile updated successfully");
         setIsEditing(false);
       },
-      onError: (error) => {
-        console.error("Error updating profile:", error);
+      onError: () => {
         Alert.alert("Error", "Failed to update profile. Please try again.");
       },
       onSettled: () => {
@@ -160,10 +141,7 @@ const ProfilePage = () => {
 
   const SignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Cancel", style: "cancel" },
       {
         text: "Sign Out",
         style: "destructive",
@@ -177,14 +155,15 @@ const ProfilePage = () => {
 
   if (loading || isLoadingProfile || processing) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.centered}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
+
   if (isError) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.centered}>
         <Text>Error Loading Profile</Text>
       </View>
     );
@@ -218,10 +197,10 @@ const ProfilePage = () => {
         />
         <Formik
           initialValues={{
-            avatarUrl: avatarUrl ?? defaultProfileImage,
-            fullName: myProfile?.full_name || profile?.full_name || "",
-            username: myProfile?.username || profile?.username || "",
-            website: myProfile?.website || profile?.website || "",
+            avatarUrl: avatarUrl ?? "defaultProfilePic.png",
+            fullName: profile?.full_name || "",
+            username: profile?.username || "",
+            website: profile?.website || "",
           }}
           validationSchema={validationSchema}
           onSubmit={handleSave as unknown as () => void}
@@ -239,24 +218,17 @@ const ProfilePage = () => {
             <View>
               <Pressable
                 onPress={() => isEditing && pickImage(setFieldValue)}
-                style={{
-                  width: 125,
-                  height: 100,
-                  justifyContent: "center",
-                  alignSelf: "center",
-                  paddingBottom: 15,
-                  marginBottom: 15,
-                }}
+                style={styles.imagePicker}
               >
                 {values.avatarUrl.startsWith("file://") ? (
                   <Image
-                    source={{ uri: values.avatarUrl || defaultProfileImage }}
+                    source={{ uri: values.avatarUrl }}
                     style={styles.profileImage}
                   />
                 ) : (
                   <RemoteImage
                     path={avatarUrl}
-                    fallback={defaultProfileImage}
+                    fallback="defaultProfilePic.png"
                     bucketName="profile-images"
                     style={styles.profileImage}
                   />
@@ -266,7 +238,7 @@ const ProfilePage = () => {
                     name={"pencil-square-o"}
                     size={25}
                     color={Colors.light.tint}
-                    style={{ position: "absolute", right: 0, bottom: 10 }}
+                    style={styles.pencilIcon}
                   />
                 )}
               </Pressable>
@@ -274,13 +246,8 @@ const ProfilePage = () => {
                 <View style={styles.row}>
                   <Text style={styles.label}>Full Name</Text>
                   <TextInput
-                    style={[
-                      styles.input,
-                      isEditing && {
-                        borderBottomWidth: 1,
-                      },
-                    ]}
-                    value={values.fullName || ""}
+                    style={[styles.input, isEditing && styles.editableInput]}
+                    value={values.fullName}
                     onChangeText={handleChange("fullName")}
                     onBlur={handleBlur("fullName")}
                     placeholder="eg. John Doe"
@@ -295,13 +262,8 @@ const ProfilePage = () => {
                 <View style={styles.row}>
                   <Text style={styles.label}>Username</Text>
                   <TextInput
-                    style={[
-                      styles.input,
-                      isEditing && {
-                        borderBottomWidth: 1,
-                      },
-                    ]}
-                    value={values.username || ""}
+                    style={[styles.input, isEditing && styles.editableInput]}
+                    value={values.username}
                     onChangeText={handleChange("username")}
                     onBlur={handleBlur("username")}
                     placeholder="eg: johndoe123"
@@ -316,13 +278,8 @@ const ProfilePage = () => {
                 <View style={styles.row}>
                   <Text style={styles.label}>Website</Text>
                   <TextInput
-                    style={[
-                      styles.input,
-                      isEditing && {
-                        borderBottomWidth: 1,
-                      },
-                    ]}
-                    value={values.website || ""}
+                    style={[styles.input, isEditing && styles.editableInput]}
+                    value={values.website}
                     onChangeText={handleChange("website")}
                     onBlur={handleBlur("website")}
                     placeholder="eg: https://example.com"
@@ -359,12 +316,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 10,
   },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   profileImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
     marginBottom: 15,
     alignSelf: "center",
+  },
+  imagePicker: {
+    width: 125,
+    height: 100,
+    justifyContent: "center",
+    alignSelf: "center",
+    paddingBottom: 15,
+    marginBottom: 15,
+  },
+  pencilIcon: {
+    position: "absolute",
+    right: 0,
+    bottom: 10,
   },
   table: {
     padding: 10,
@@ -389,6 +364,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: "white",
     color: "black",
+  },
+  editableInput: {
+    borderBottomWidth: 1,
   },
   errorText: {
     color: "red",

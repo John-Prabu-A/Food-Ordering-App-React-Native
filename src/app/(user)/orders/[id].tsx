@@ -10,7 +10,7 @@ export default function OrderDetailsScreen() {
   const id = parseFloat(
     !idString ? "" : typeof idString === "string" ? idString : idString[0]
   );
-  console.log(id);
+  // console.log(id);
 
   const { data: order, isLoading, error } = useOrderDetails(id);
 

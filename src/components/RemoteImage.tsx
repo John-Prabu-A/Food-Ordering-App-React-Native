@@ -1,4 +1,4 @@
-import { Image } from "react-native";
+import { Alert, Image } from "react-native";
 import React, { ComponentProps, useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -25,7 +25,8 @@ const RemoteImage = ({
         .download(path);
 
       if (error) {
-        console.log(error);
+        // console.log(error);
+        Alert.alert("Error", error.message);
       }
 
       if (data) {

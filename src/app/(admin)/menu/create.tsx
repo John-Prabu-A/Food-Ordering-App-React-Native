@@ -66,15 +66,15 @@ const CreateProductScreen = () => {
 
   const onCreate = async () => {
     const imagePath = await uploadImage();
-    console.log("imagePath", imagePath);
+    // console.log("imagePath", imagePath);
     insertProduct(
       { name, price: parseFloat(price), image: imagePath },
       {
         onSuccess: () => {
           resetFields();
-          console.log("Success.. fields resetted.");
+          // console.log("Success.. fields resetted.");
           router.back();
-          console.log("Back..");
+          // console.log("Back..");
 
           setProcessing(false);
         },
@@ -122,23 +122,25 @@ const CreateProductScreen = () => {
     setDeleting(true);
     if (updatingProduct?.image) {
       try {
-        console.log("Attempting to delete image:", updatingProduct.image);
+        // console.log("Attempting to delete image:", updatingProduct.image);
 
         const { data, error } = await supabase.storage
           .from("product-images")
           .remove([updatingProduct.image]);
 
         if (error) {
-          console.error("Error deleting image:", error.message);
-        } else {
-          console.log("Image deleted successfully:", data);
+          Alert.alert("Error deleting image:", error.message);
         }
+        // else {
+        //   Alert.alert("Image deleted successfully");
+        // }
       } catch (error: any) {
-        console.error("Error checking or deleting image:", error.message);
+        Alert.alert("Error checking or deleting image:", error.message);
       }
-    } else {
-      console.log("No image to delete.");
     }
+    // else {
+    //   console.log("No image to delete.");
+    // }
 
     deleteProduct(id, {
       onSuccess: () => {
@@ -175,7 +177,7 @@ const CreateProductScreen = () => {
       .upload(filePath, decode(base64), { contentType });
 
     if (error) {
-      console.error("Error uploading image", error);
+      Alert.alert("Error uploading image", error.message);
     }
 
     if (data) {
@@ -204,18 +206,18 @@ const CreateProductScreen = () => {
         price: price ? parseFloat(price.toString()) : 0,
       }}
       onSubmit={async () => {
-        console.log("Submitting..");
+        // console.log("Submitting..");
 
         setProcessing(true);
-        console.log("process start..");
+        // console.log("process start..");
         if (isUpdating) {
-          console.log("Updating..");
+          // console.log("Updating..");
           await onUpdate();
         } else {
-          console.log("Creating..");
+          // console.log("Creating..");
           await onCreate();
         }
-        console.log("process end..");
+        // console.log("process end..");
       }}
       validationSchema={validationSchema}
     >

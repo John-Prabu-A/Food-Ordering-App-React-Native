@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   runOnJS,
 } from "react-native-reanimated";
+import { useAuth } from "@/src/providers/AuthProvider";
 
 type UserData = {
   email: string;
@@ -22,6 +23,7 @@ export default function AuthForm() {
   const [isSignUp, setIsSignUp] = useState(!useLocalSearchParams());
   const [loading, setLoading] = useState(false);
   const animationValue = useSharedValue(0);
+  const { updateAuth } = useAuth();
 
   const toggleFormType = () => {
     animationValue.value = withTiming(
@@ -67,8 +69,8 @@ export default function AuthForm() {
       Alert.alert("Sign In Error", error.message);
       return;
     }
-    console.log("userData : ", values);
     setLoading(false);
+    updateAuth();
     <Redirect href="/" />;
   };
 
