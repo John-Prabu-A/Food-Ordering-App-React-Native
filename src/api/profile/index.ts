@@ -4,7 +4,7 @@ import { UpdateTables } from "@/src/types";
 
 export const useProfile = (id: string) => {
   return useQuery({
-    queryKey: ["profiles", id],
+    queryKey: ["profiles"],
     queryFn: async () => {
       const { data: myProfile, error } = await supabase
         .from("profiles")
@@ -44,7 +44,6 @@ export const useUpdateProfile = () => {
     },
     async onSuccess(_, { id }) {
       await queryClient.invalidateQueries({ queryKey: ["profiles"] });
-      await queryClient.invalidateQueries({ queryKey: ["profiles", id] });
     },
   });
 };

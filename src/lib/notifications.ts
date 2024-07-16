@@ -85,7 +85,7 @@ export async function registerForPushNotificationsAsync() {
     ).data;
     // console.log("In n.tx -> token : ", token);
   } else {
-    alert("Must use physical device for Push Notifications");
+    // alert("Must use physical device for Push Notifications");
   }
 
   return token;

@@ -36,15 +36,22 @@ type ProfileUpdateValues = {
 };
 
 const ProfilePage = () => {
-  const { session, loading, isAdmin, profile } = useAuth();
-  if (!profile) {
-    return null;
+  const { session, loading, profile } = useAuth();
+
+  if (loading || session === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
+
   const {
     data: myProfile,
     isLoading: isLoadingProfile,
     isError,
-  } = useProfile(profile.id);
+  } = useProfile(session.user.id);
+  console.log(useProfile(profile.id));
   const updateProfileMutation = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -160,7 +167,10 @@ const ProfilePage = () => {
       {
         text: "Sign Out",
         style: "destructive",
-        onPress: () => supabase.auth.signOut(),
+        onPress: () => {
+          supabase.auth.signOut();
+          <Redirect href="/" />;
+        },
       },
     ]);
   };
@@ -277,7 +287,9 @@ const ProfilePage = () => {
                     editable={isEditing}
                   />
                   {touched.fullName && errors.fullName && (
-                    <Text style={styles.errorText}>{errors.fullName}</Text>
+                    <Text style={styles.errorText}>
+                      {errors.fullName.toString()}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.row}>
@@ -296,7 +308,9 @@ const ProfilePage = () => {
                     editable={isEditing}
                   />
                   {touched.username && errors.username && (
-                    <Text style={styles.errorText}>{errors.username}</Text>
+                    <Text style={styles.errorText}>
+                      {errors.username.toString()}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.row}>
@@ -315,7 +329,9 @@ const ProfilePage = () => {
                     editable={isEditing}
                   />
                   {touched.website && errors.website && (
-                    <Text style={styles.errorText}>{errors.website}</Text>
+                    <Text style={styles.errorText}>
+                      {errors.website.toString()}
+                    </Text>
                   )}
                 </View>
               </View>

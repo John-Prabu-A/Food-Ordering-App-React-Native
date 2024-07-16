@@ -4,26 +4,22 @@ import { Order, Tables } from "../types";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
 import { Link, useSegments } from "expo-router";
+import { useUpdateOrderSubscription } from "../api/orders/subscriptions";
 
 dayjs.extend(relativeTime);
 
 type OrderListItemProps = {
   order:
-    | (Tables<"orders"> & {
-        order_items: (
-          | Tables<"order_items">
-          | (null & {
-              products: Tables<"products"> | null;
-            })
-        )[];
-      })
-    | undefined;
+    | Tables<"orders"> 
 };
 
-const OrderListItem = ({ order }: any) => {
+
+const OrderListItem = ({ order }: OrderListItemProps) => {
   const segments = useSegments();
   if (!order) return null;
 
+  useUpdateOrderSubscription(order.id); // realtime order Status update
+  
   return (
     <Link href={`/${segments[0]}/orders/${order.id}`} asChild>
       <Pressable style={styles.container}>

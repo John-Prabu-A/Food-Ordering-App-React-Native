@@ -27,7 +27,7 @@ export const useMyOrderList = () => {
   const id = session?.user.id;
 
   return useQuery({
-    queryKey: ["orders", { userId: id }],
+    queryKey: ["orders"],
     queryFn: async () => {
       if (!id) return null;
       const { data, error } = await supabase
@@ -108,7 +108,7 @@ export const useUpdateOrder = () => {
       }
       return updatedOrder;
     },
-    async onSuccess(_, { id }) {
+    async onSuccess({user_id}, { id, updatedFields }) {
       await queryClient.invalidateQueries({ queryKey: ["orders"] });
       await queryClient.invalidateQueries({ queryKey: ["orders", id] });
     },

@@ -1,3 +1,4 @@
+import { supabase } from "@lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import {
   PropsWithChildren,
@@ -6,12 +7,11 @@ import {
   useEffect,
   useState,
 } from "react";
-import { supabase } from "../lib/supabase";
-import { InsertTables, Profile } from "../types";
+import { Profile } from "../types";
 
 type AuthData = {
   session: Session | null;
-  profile: InsertTables<"profiles"> | null;
+  profile: any;
   loading: boolean;
   isAdmin: boolean;
 };
@@ -29,6 +29,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("session : ", session);
     const fetchSession = async () => {
       const {
         data: { session },
@@ -45,13 +46,12 @@ export default function AuthProvider({ children }: PropsWithChildren) {
           .single();
         setProfile(data || null);
       }
-
-      setLoading(false);
     };
 
     fetchSession();
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setLoading(false);
     });
   }, []);
 
