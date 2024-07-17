@@ -34,7 +34,13 @@ const index = () => {
   }
 
   return (
-    <View>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
       <Link href={"/(user)"} asChild>
         <Button text="User" />
       </Link>

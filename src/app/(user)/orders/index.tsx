@@ -32,7 +32,9 @@ export default function OrdersScreen() {
 
   return (
     <View
-      style={[{ backgroundColor: colorScheme === "dark" ? "#000" : "#fff" }]}
+      style={[
+        { backgroundColor: colorScheme === "dark" ? "#000" : "#fff", flex: 1 },
+      ]}
     >
       <FlatList
         data={orders}

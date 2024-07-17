@@ -19,6 +19,12 @@ export default function OrdersScreen() {
       }}
     >
       <Stack.Screen
+        name="[id]"
+        options={{
+          title: `Order #${segments[2]}`,
+        }}
+      />
+      <Stack.Screen
         name="index"
         options={{
           title: "Orders",

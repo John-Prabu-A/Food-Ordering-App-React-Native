@@ -21,30 +21,16 @@ export default function MenuScreen() {
     Alert.alert("Error", error.message);
     return <Text>Products Not Found!!!</Text>;
   }
+
   return (
     <FlatList
       data={products}
       renderItem={({ item }) => (
         <ProductListItem key={item.id} product={item} />
       )}
-      keyExtractor={(item) => item.id.toString()}
       numColumns={2}
-      columnWrapperStyle={{ gap: 10, padding: 10 }}
-      contentContainerStyle={[
-        styles.container,
-        {
-          backgroundColor: colorScheme === "dark" ? "#111" : "#fff",
-          gap: 10,
-          padding: 10,
-        },
-      ]}
+      contentContainerStyle={{ gap: 10, padding: 10 }}
+      columnWrapperStyle={{ gap: 10 }}
     />
   );
 }
-
-const styles = {
-  container: {
-    padding: 10,
-    flexGrow: 1,
-  },
-};

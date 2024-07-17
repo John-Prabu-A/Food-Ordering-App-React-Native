@@ -21,6 +21,7 @@ export default function OrderDetailsScreen() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Stack.Screen options={{ title: "Order Item" }} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -28,6 +29,7 @@ export default function OrderDetailsScreen() {
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Stack.Screen options={{ title: "Order Item" }} />
         <Text>{error.message}</Text>
       </View>
     );
@@ -35,6 +37,7 @@ export default function OrderDetailsScreen() {
   if (!order) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Stack.Screen options={{ title: "Order Item" }} />
         <Text>Order not found</Text>
       </View>
     );

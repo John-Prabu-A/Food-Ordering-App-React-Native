@@ -46,7 +46,7 @@ const ProfilePage = () => {
       flex: 1,
       justifyContent: "center",
       padding: 10,
-      backgroundColor: colorScheme === "dark" ? "#111" : "#fff",
+      backgroundColor: colorScheme === "dark" ? "#111" : "#eee",
     },
     profileImage: {
       width: 100,
@@ -99,23 +99,23 @@ const ProfilePage = () => {
     isLoading: isLoadingProfile,
     isError,
   } = useProfile(session.user.id);
-  console.log(useProfile(profile?.id || ""));
+  // console.log(useProfile(profile?.id || ""));
   const updateProfileMutation = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
 
-  const defaultProfileImage: ImageSourcePropType = require("@assets/images/defaultProfilePic.png");
+  const defaultProfileImage = "@assets/images/defaultProfilePic.png";
   useEffect(() => {
-    console.log(avatarUrl);
+    // console.log(avatarUrl);
     if (profile) {
       setAvatarUrl(profile.avatar_url || "defaultProfilePic.png");
     }
     if (myProfile) {
       setAvatarUrl(myProfile.avatar_url || "defaultProfilePic.png");
     }
-    console.log("Profile", profile);
+    // console.log("Profile", profile);
   }, [profile, myProfile]);
 
   const validationSchema = Yup.object().shape({
@@ -142,7 +142,7 @@ const ProfilePage = () => {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
-      console.log("uri", uri);
+      // console.log("uri", uri);
       setAvatarUrl(uri);
       setFieldValue("avatarUrl", uri);
     }
@@ -164,7 +164,7 @@ const ProfilePage = () => {
       .upload(filePath, decode(base64), { contentType });
 
     if (error) {
-      console.error("Error uploading image", error);
+      // console.error("Error uploading image", error);
       return null;
     }
 
@@ -191,11 +191,11 @@ const ProfilePage = () => {
 
     updateProfileMutation.mutate(updates, {
       onSuccess: () => {
-        console.log("Profile updated successfully");
+        // console.log("Profile updated successfully");
         setIsEditing(false);
       },
       onError: (error) => {
-        console.error("Error updating profile:", error);
+        // console.error("Error updating profile:", error);
         Alert.alert("Error", "Failed to update profile. Please try again.");
       },
       onSettled: () => {
@@ -399,14 +399,17 @@ const ProfilePage = () => {
                     onChangeText={handleChange("fullName")}
                     onBlur={handleBlur("fullName")}
                     placeholder="eg. John Doe"
+                    placeholderTextColor={
+                      colorScheme === "dark" ? "#aaa" : "#666"
+                    }
                     editable={isEditing}
                   />
-                  {touched.fullName && errors.fullName && (
-                    <Text style={styles.errorText}>
-                      {errors.fullName.toString()}
-                    </Text>
-                  )}
                 </View>
+                {touched.fullName && errors.fullName && (
+                  <Text style={styles.errorText}>
+                    {errors.fullName.toString()}
+                  </Text>
+                )}
                 <View style={styles.row}>
                   <Text style={styles.label}>Username</Text>
                   <TextInput
@@ -420,14 +423,17 @@ const ProfilePage = () => {
                     onChangeText={handleChange("username")}
                     onBlur={handleBlur("username")}
                     placeholder="eg: johndoe123"
+                    placeholderTextColor={
+                      colorScheme === "dark" ? "#aaa" : "#666"
+                    }
                     editable={isEditing}
                   />
-                  {touched.username && errors.username && (
-                    <Text style={styles.errorText}>
-                      {errors.username.toString()}
-                    </Text>
-                  )}
                 </View>
+                {touched.username && errors.username && (
+                  <Text style={styles.errorText}>
+                    {errors.username.toString()}
+                  </Text>
+                )}
                 <View style={styles.row}>
                   <Text style={styles.label}>Website</Text>
                   <TextInput
@@ -441,14 +447,17 @@ const ProfilePage = () => {
                     onChangeText={handleChange("website")}
                     onBlur={handleBlur("website")}
                     placeholder="eg: https://example.com"
+                    placeholderTextColor={
+                      colorScheme === "dark" ? "#aaa" : "#666"
+                    }
                     editable={isEditing}
                   />
-                  {touched.website && errors.website && (
-                    <Text style={styles.errorText}>
-                      {errors.website.toString()}
-                    </Text>
-                  )}
                 </View>
+                {touched.website && errors.website && (
+                  <Text style={styles.errorText}>
+                    {errors.website.toString()}
+                  </Text>
+                )}
               </View>
               {isEditing && (
                 <Button

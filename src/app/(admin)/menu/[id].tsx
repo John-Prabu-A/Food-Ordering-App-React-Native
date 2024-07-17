@@ -32,6 +32,11 @@ const ProductDetailsScreen = () => {
           { backgroundColor: colorScheme === "dark" ? "#111" : "#fff" },
         ]}
       >
+        <Stack.Screen
+          options={{
+            title: "Menu Item",
+          }}
+        />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -44,6 +49,11 @@ const ProductDetailsScreen = () => {
           { backgroundColor: colorScheme === "dark" ? "#111" : "#fff" },
         ]}
       >
+        <Stack.Screen
+          options={{
+            title: "Menu Item",
+          }}
+        />
         <Text>{error.message}</Text>
       </View>
     );

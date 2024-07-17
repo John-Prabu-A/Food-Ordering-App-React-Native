@@ -18,6 +18,12 @@ export default function MenuScreen() {
       }}
     >
       <Stack.Screen
+        name="[id]"
+        options={{
+          title: `Order`,
+        }}
+      />
+      <Stack.Screen
         name="index"
         options={{
           title: "Menu",

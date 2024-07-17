@@ -43,6 +43,7 @@ const OrderDetailScreen = () => {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Stack.Screen options={{ title: "Order" }} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -50,6 +51,7 @@ const OrderDetailScreen = () => {
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Stack.Screen options={{ title: "Order" }} />
         <Text>{error.message}</Text>
       </View>
     );
@@ -57,6 +59,7 @@ const OrderDetailScreen = () => {
   if (!order) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Stack.Screen options={{ title: "Order" }} />
         <Text>Order not found</Text>
       </View>
     );

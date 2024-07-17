@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import { useCart } from "@providers/CartProvider";
 import CartListItem from "../components/CartListItem";
 import Button from "../components/Button";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const CartScreen = () => {
   const { items, total, checkout, isCartProcessing } = useCart();
@@ -21,8 +22,25 @@ const CartScreen = () => {
       </View>
     );
   }
+
+  if (items.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <MaterialCommunityIcons
+          name="cart-variant"
+          size={200}
+          style={{ opacity: 0.5 }}
+          color="grey"
+        />
+        <Text style={{ color: "grey", opacity: 0.5, fontSize: 26 }}>
+          Your cart is empty
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View>
+    <View style={{ padding: 10 }}>
       <FlatList
         data={items}
         renderItem={({ item }) => (

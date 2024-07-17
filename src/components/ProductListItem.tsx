@@ -5,8 +5,9 @@ import {
   Platform,
   TouchableOpacity,
   ImageSourcePropType,
+  Pressable,
 } from "react-native";
-import { Link, useSegments } from "expo-router";
+import { Link, useRouter, useSegments } from "expo-router";
 import RemoteImage from "./RemoteImage";
 import { Tables } from "../database.types";
 
@@ -14,17 +15,22 @@ interface ProductListItemProps {
   product: Tables<"products">;
 }
 
-export const defaultPizzaImage: ImageSourcePropType = require("@assets/images/defaultPizzaImage.png");
+export const defaultPizzaImage = "@assets/images/defaultPizzaImage.png";
 
 const ProductListItem = ({ product }: ProductListItemProps) => {
   const segments = useSegments();
   const baseSegment = segments[0] || "(unknown)";
   const theme = useColorScheme();
   const styles = createStyles(theme || "");
+  const router = useRouter();
 
   return (
     <Link href={`/${baseSegment}/menu/${product.id}`} asChild>
-      <TouchableOpacity style={styles.container} activeOpacity={0.5}>
+      <TouchableOpacity
+        style={styles.container}
+        activeOpacity={0.5}
+        onPress={() => router.push(`/${baseSegment}/menu/${product.id}`)}
+      >
         <RemoteImage
           path={product.image}
           fallback={defaultPizzaImage}
@@ -49,6 +55,7 @@ const createStyles = (theme: string) => {
       borderRadius: 10,
       flex: 1,
       maxWidth: "50%",
+      aspectRatio: 3 / 4,
       ...Platform.select({
         ios: {
           shadowColor: "#000",
