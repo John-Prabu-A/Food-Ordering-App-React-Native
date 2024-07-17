@@ -10,6 +10,8 @@ import {
   ScrollView,
   Alert,
   Image,
+  ImageSourcePropType,
+  useColorScheme,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Redirect, Stack } from "expo-router";
@@ -37,23 +39,83 @@ type ProfileUpdateValues = {
 
 const ProfilePage = () => {
   const { session, loading, profile } = useAuth();
+  const colorScheme = useColorScheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      padding: 10,
+      backgroundColor: colorScheme === "dark" ? "#111" : "#fff",
+    },
+    profileImage: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      marginBottom: 15,
+      alignSelf: "center",
+    },
+    table: {
+      padding: 10,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+      paddingHorizontal: 10,
+    },
+    label: {
+      flex: 1,
+      fontSize: 16,
+      fontWeight: "bold",
+      color: colorScheme === "dark" ? "#fff" : "#000",
+    },
+    input: {
+      flex: 2,
+      height: 40,
+      paddingHorizontal: 10,
+      borderColor: Colors.light.tint,
+      borderLeftWidth: 2,
+      borderRadius: 5,
+      backgroundColor: colorScheme === "dark" ? "#333" : "#fff",
+      color: colorScheme === "dark" ? "#fff" : "#000",
+    },
+    errorText: {
+      color: "red",
+      marginTop: 5,
+    },
+  });
+
+  if (loading || session === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   const {
     data: myProfile,
     isLoading: isLoadingProfile,
     isError,
-  } = useProfile(profile?.id);
+  } = useProfile(session.user.id);
+  console.log(useProfile(profile?.id || ""));
   const updateProfileMutation = useUpdateProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
+  const defaultProfileImage: ImageSourcePropType = require("@assets/images/defaultProfilePic.png");
   useEffect(() => {
+    console.log(avatarUrl);
     if (profile) {
       setAvatarUrl(profile.avatar_url || "defaultProfilePic.png");
     }
     if (myProfile) {
       setAvatarUrl(myProfile.avatar_url || "defaultProfilePic.png");
     }
+    console.log("Profile", profile);
   }, [profile, myProfile]);
 
   const validationSchema = Yup.object().shape({
@@ -80,6 +142,7 @@ const ProfilePage = () => {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
+      console.log("uri", uri);
       setAvatarUrl(uri);
       setFieldValue("avatarUrl", uri);
     }
@@ -101,7 +164,7 @@ const ProfilePage = () => {
       .upload(filePath, decode(base64), { contentType });
 
     if (error) {
-      Alert.alert("Error uploading image", error.message);
+      console.error("Error uploading image", error);
       return null;
     }
 
@@ -112,8 +175,9 @@ const ProfilePage = () => {
     values: ProfileUpdateValues,
     { setSubmitting }: FormikHelpers<ProfileUpdateValues>
   ) => {
-    if (!profile) return;
-
+    if (!profile) {
+      return;
+    }
     setProcessing(true);
     const avatarPath = await uploadImage(values.avatarUrl as string);
     const updates: UpdateTables<"profiles"> = {
@@ -127,9 +191,11 @@ const ProfilePage = () => {
 
     updateProfileMutation.mutate(updates, {
       onSuccess: () => {
+        console.log("Profile updated successfully");
         setIsEditing(false);
       },
-      onError: () => {
+      onError: (error) => {
+        console.error("Error updating profile:", error);
         Alert.alert("Error", "Failed to update profile. Please try again.");
       },
       onSettled: () => {
@@ -141,7 +207,10 @@ const ProfilePage = () => {
 
   const SignOut = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
       {
         text: "Sign Out",
         style: "destructive",
@@ -155,15 +224,14 @@ const ProfilePage = () => {
 
   if (loading || isLoadingProfile || processing) {
     return (
-      <View style={styles.centered}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
-
   if (isError) {
     return (
-      <View style={styles.centered}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Error Loading Profile</Text>
       </View>
     );
@@ -179,28 +247,12 @@ const ProfilePage = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Stack.Screen
-          options={{
-            headerRight: () => (
-              <Pressable onPress={() => setIsEditing((prev) => !prev)}>
-                {({ pressed }) => (
-                  <MaterialIcons
-                    name={isEditing ? "done" : "edit"}
-                    size={25}
-                    color={Colors.light.tint}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            ),
-          }}
-        />
         <Formik
           initialValues={{
-            avatarUrl: avatarUrl ?? "defaultProfilePic.png",
-            fullName: profile?.full_name || "",
-            username: profile?.username || "",
-            website: profile?.website || "",
+            avatarUrl: avatarUrl ?? defaultProfileImage,
+            fullName: myProfile?.full_name || profile?.full_name || "",
+            username: myProfile?.username || profile?.username || "",
+            website: myProfile?.website || profile?.website || "",
           }}
           validationSchema={validationSchema}
           onSubmit={handleSave as unknown as () => void}
@@ -216,11 +268,79 @@ const ProfilePage = () => {
             isSubmitting,
           }) => (
             <View>
+              <Stack.Screen
+                options={{
+                  headerRight: () => (
+                    <Pressable
+                      onPress={() => {
+                        if (!isEditing) {
+                          setIsSaved(false);
+                          setIsEditing((prev) => !prev);
+                        } else if (isSaved) {
+                          setIsEditing(false);
+                        } else {
+                          Alert.alert(
+                            "Discard Changes",
+                            "Are you sure you want to discard changes?",
+                            [
+                              {
+                                text: "Cancel",
+                                style: "cancel",
+                              },
+                              {
+                                text: "Discard",
+                                style: "destructive",
+                                onPress: () => {
+                                  setAvatarUrl(profile?.avatar_url || null);
+                                  values.avatarUrl = profile?.avatar_url || "";
+                                  values.fullName =
+                                    myProfile?.full_name ||
+                                    profile?.full_name ||
+                                    "";
+                                  values.username =
+                                    myProfile?.username ||
+                                    profile?.username ||
+                                    "";
+                                  values.website =
+                                    myProfile?.website ||
+                                    profile?.website ||
+                                    "";
+                                  setIsEditing(false);
+                                },
+                              },
+                            ]
+                          );
+                        }
+                      }}
+                    >
+                      {({ pressed }) => (
+                        <MaterialIcons
+                          name={isEditing ? "done" : "edit"}
+                          size={25}
+                          color={Colors.light.tint}
+                          style={{
+                            marginRight: 15,
+                            opacity: pressed ? 0.5 : 1,
+                          }}
+                        />
+                      )}
+                    </Pressable>
+                  ),
+                }}
+              />
               <Pressable
                 onPress={() => isEditing && pickImage(setFieldValue)}
-                style={styles.imagePicker}
+                style={{
+                  width: 125,
+                  height: 100,
+                  justifyContent: "center",
+                  alignSelf: "center",
+                  paddingBottom: 15,
+                  marginBottom: 15,
+                }}
               >
-                {values.avatarUrl.startsWith("file://") ? (
+                {typeof values.avatarUrl === "string" &&
+                values.avatarUrl.startsWith("file://") ? (
                   <Image
                     source={{ uri: values.avatarUrl }}
                     style={styles.profileImage}
@@ -228,7 +348,7 @@ const ProfilePage = () => {
                 ) : (
                   <RemoteImage
                     path={avatarUrl}
-                    fallback="defaultProfilePic.png"
+                    fallback={defaultProfileImage}
                     bucketName="profile-images"
                     style={styles.profileImage}
                   />
@@ -237,8 +357,31 @@ const ProfilePage = () => {
                   <FontAwesome
                     name={"pencil-square-o"}
                     size={25}
-                    color={Colors.light.tint}
-                    style={styles.pencilIcon}
+                    color={
+                      colorScheme === "dark"
+                        ? "rgba(0, 255, 255, 0.7)"
+                        : "black"
+                    }
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      bottom: 20,
+                      backgroundColor:
+                        colorScheme === "dark"
+                          ? "rgba(128, 128, 128, 0)"
+                          : "rgba(255, 255, 255, 0.7)",
+                      borderRadius: 5,
+                      padding: 5,
+                      paddingBottom: 2,
+                      alignContent: "center",
+                      justifyContent: "center",
+                      textShadowColor:
+                        colorScheme === "dark"
+                          ? "rgba(255,255,255,1)"
+                          : "rgba(0,0,0,1)",
+                      textShadowOffset: { width: 0.2, height: 0.2 },
+                      textShadowRadius: 1,
+                    }}
                   />
                 )}
               </Pressable>
@@ -246,8 +389,13 @@ const ProfilePage = () => {
                 <View style={styles.row}>
                   <Text style={styles.label}>Full Name</Text>
                   <TextInput
-                    style={[styles.input, isEditing && styles.editableInput]}
-                    value={values.fullName}
+                    style={[
+                      styles.input,
+                      isEditing && {
+                        borderBottomWidth: 1,
+                      },
+                    ]}
+                    value={values.fullName || ""}
                     onChangeText={handleChange("fullName")}
                     onBlur={handleBlur("fullName")}
                     placeholder="eg. John Doe"
@@ -262,8 +410,13 @@ const ProfilePage = () => {
                 <View style={styles.row}>
                   <Text style={styles.label}>Username</Text>
                   <TextInput
-                    style={[styles.input, isEditing && styles.editableInput]}
-                    value={values.username}
+                    style={[
+                      styles.input,
+                      isEditing && {
+                        borderBottomWidth: 1,
+                      },
+                    ]}
+                    value={values.username || ""}
                     onChangeText={handleChange("username")}
                     onBlur={handleBlur("username")}
                     placeholder="eg: johndoe123"
@@ -278,8 +431,13 @@ const ProfilePage = () => {
                 <View style={styles.row}>
                   <Text style={styles.label}>Website</Text>
                   <TextInput
-                    style={[styles.input, isEditing && styles.editableInput]}
-                    value={values.website}
+                    style={[
+                      styles.input,
+                      isEditing && {
+                        borderBottomWidth: 1,
+                      },
+                    ]}
+                    value={values.website || ""}
                     onChangeText={handleChange("website")}
                     onBlur={handleBlur("website")}
                     placeholder="eg: https://example.com"
@@ -309,69 +467,5 @@ const ProfilePage = () => {
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 10,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 15,
-    alignSelf: "center",
-  },
-  imagePicker: {
-    width: 125,
-    height: 100,
-    justifyContent: "center",
-    alignSelf: "center",
-    paddingBottom: 15,
-    marginBottom: 15,
-  },
-  pencilIcon: {
-    position: "absolute",
-    right: 0,
-    bottom: 10,
-  },
-  table: {
-    padding: 10,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  label: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  input: {
-    flex: 2,
-    height: 40,
-    paddingHorizontal: 10,
-    borderColor: Colors.light.tint,
-    borderLeftWidth: 2,
-    borderRadius: 5,
-    backgroundColor: "white",
-    color: "black",
-  },
-  editableInput: {
-    borderBottomWidth: 1,
-  },
-  errorText: {
-    color: "red",
-    marginTop: 5,
-  },
-});
 
 export default ProfilePage;

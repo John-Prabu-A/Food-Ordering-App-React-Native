@@ -23,17 +23,17 @@ export const useAdminOrderList = ({ archived = false }) => {
 };
 
 export const useMyOrderList = () => {
-  const { session } = useAuth();
-  const id = session?.user.id;
+  const { profile } = useAuth();
+  const user_id = profile?.id;
 
   return useQuery({
-    queryKey: ["orders"],
+    queryKey: ["orders", { userId: user_id }],
     queryFn: async () => {
-      if (!id) return null;
+      if (!user_id) return null;
       const { data, error } = await supabase
         .from("orders")
         .select("*")
-        .eq("user_id", id)
+        .eq("user_id", user_id)
         .order("created_at", { ascending: false });
       if (error) {
         throw new Error(error.message);
@@ -43,9 +43,9 @@ export const useMyOrderList = () => {
   });
 };
 
-export const useOrderDetails = (id: number) => {
+export const useOrderDetails = (user_id: string, id: number) => {
   return useQuery({
-    queryKey: ["orders", id],
+    queryKey: ["orders", { userId: user_id }, id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")

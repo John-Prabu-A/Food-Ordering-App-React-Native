@@ -1,10 +1,16 @@
-import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  useColorScheme,
+} from "react-native";
 import { Text, View } from "@/src/components/Themed";
 import OrderListItem from "@/src/components/OrderListItem";
 import { useAdminOrderList } from "@/src/api/orders";
 import { useInsertOrderSubscription } from "@/src/api/orders/subscriptions";
 
 export default function OrdersScreen() {
+  const colorScheme = useColorScheme();
   useInsertOrderSubscription(); // realtime orders update
   const {
     data: orders,
@@ -26,7 +32,12 @@ export default function OrdersScreen() {
     );
   }
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#000" : "#fff" },
+      ]}
+    >
       <FlatList
         data={orders}
         renderItem={({ item }) => <OrderListItem order={item} />}

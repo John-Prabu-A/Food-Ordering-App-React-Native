@@ -24,7 +24,7 @@ export const useInsertOrderSubscription = () => {
   }, []);
 };
 
-export const useUpdateOrderSubscription = (id: number) => {
+export const useUpdateOrderSubscription = (user_id: string) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -36,11 +36,13 @@ export const useUpdateOrderSubscription = (id: number) => {
           event: "UPDATE",
           schema: "public",
           table: "orders",
-          filter: `id=eq.${id}`,
+          filter: `user_id=eq.${user_id}`,
         },
         (payload) => {
           // console.log("Order Update Change Received : ", payload);
-          queryClient.invalidateQueries({ queryKey: ["orders", id] });
+          queryClient.invalidateQueries({
+            queryKey: ["orders", { userId: user_id }],
+          });
         }
       )
       .subscribe();

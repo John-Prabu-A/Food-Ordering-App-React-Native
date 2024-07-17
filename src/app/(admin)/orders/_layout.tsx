@@ -1,8 +1,5 @@
-import Colors from "@/src/constants/Colors";
 import { useAuth } from "@/src/providers/AuthProvider";
-import { FontAwesome } from "@expo/vector-icons";
-import { Link, Redirect, Stack } from "expo-router";
-import { Pressable } from "react-native";
+import { Redirect, Stack } from "expo-router";
 
 export default function OrdersScreen() {
   const { isAdmin } = useAuth();

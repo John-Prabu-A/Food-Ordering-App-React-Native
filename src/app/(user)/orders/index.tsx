@@ -1,10 +1,20 @@
-import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  useColorScheme,
+} from "react-native";
 import { Text, View } from "@/src/components/Themed";
 import OrderListItem from "@/src/components/OrderListItem";
 import { useMyOrderList } from "@/src/api/orders";
+import { useUpdateOrderSubscription } from "@/src/api/orders/subscriptions";
+import { useAuth } from "@/src/providers/AuthProvider";
 
 export default function OrdersScreen() {
+  const colorScheme = useColorScheme();
   const { data: orders, isLoading, error } = useMyOrderList();
+  const { session } = useAuth();
+  useUpdateOrderSubscription(session?.user.id || "");
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -21,7 +31,9 @@ export default function OrdersScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[{ backgroundColor: colorScheme === "dark" ? "#000" : "#fff" }]}
+    >
       <FlatList
         data={orders}
         renderItem={({ item }) => <OrderListItem order={item} />}
@@ -31,10 +43,3 @@ export default function OrdersScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f0f2f5",
-  },
-});

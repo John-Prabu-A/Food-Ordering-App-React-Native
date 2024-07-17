@@ -1,7 +1,7 @@
 import { useOrderDetails } from "@/src/api/orders";
-import { useUpdateOrderSubscription } from "@/src/api/orders/subscriptions";
 import OrderItemListItem from "@/src/components/OrderItemListItem";
-import OrderListItem from "@/src/components/OrderListItem";
+import OrderListItem from "@components/OrderListItem";
+import { useAuth } from "@/src/providers/AuthProvider";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
@@ -10,11 +10,13 @@ export default function OrderDetailsScreen() {
   const id = parseFloat(
     !idString ? "" : typeof idString === "string" ? idString : idString[0]
   );
-  // console.log(id);
+  const { profile } = useAuth();
 
-  const { data: order, isLoading, error } = useOrderDetails(id);
-
-  useUpdateOrderSubscription(id); // realtime order Status update
+  const {
+    data: order,
+    isLoading,
+    error,
+  } = useOrderDetails(profile?.id || "", id);
 
   if (isLoading) {
     return (
@@ -39,7 +41,7 @@ export default function OrderDetailsScreen() {
   }
 
   return (
-    <View style={{ padding: 10, gap: 20, flex: 1 }}>
+    <View style={{ padding: 10 }}>
       <Stack.Screen options={{ title: `Order #${id}` }} />
 
       <FlatList
@@ -47,6 +49,7 @@ export default function OrderDetailsScreen() {
         renderItem={({ item }) => <OrderItemListItem item={item} />}
         contentContainerStyle={{ gap: 10 }}
         ListHeaderComponent={() => <OrderListItem order={order} />}
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );

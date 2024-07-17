@@ -22,7 +22,7 @@ const CartScreen = () => {
     );
   }
   return (
-    <View style={{ flexDirection: "column", padding: 10 }}>
+    <View>
       <FlatList
         data={items}
         renderItem={({ item }) => (

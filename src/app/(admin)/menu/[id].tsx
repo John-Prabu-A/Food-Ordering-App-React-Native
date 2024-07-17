@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
+  useColorScheme,
 } from "react-native";
 
 const sizes: PizzaSize[] = ["S", "M", "L", "XL"];
@@ -21,31 +22,52 @@ const ProductDetailsScreen = () => {
     !idString ? "" : typeof idString === "string" ? idString : idString[0]
   );
   const { data: product, error, isLoading } = useProduct(id);
+  const colorScheme = useColorScheme() || "light";
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colorScheme === "dark" ? "#111" : "#fff" },
+        ]}
+      >
         <ActivityIndicator size="large" />
       </View>
     );
   }
   if (error) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colorScheme === "dark" ? "#111" : "#fff" },
+        ]}
+      >
         <Text>{error.message}</Text>
       </View>
     );
   }
   if (!product) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: colorScheme === "dark" ? "#111" : "#fff" },
+        ]}
+      >
         <Text>Product not found</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colorScheme === "dark" ? "#111" : "#fff" },
+      ]}
+    >
       <Stack.Screen
         options={{
           title: "Menu",
@@ -56,7 +78,7 @@ const ProductDetailsScreen = () => {
                   <FontAwesome
                     name="pencil"
                     size={25}
-                    color={Colors.light.tint}
+                    color={Colors[colorScheme].tint}
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}
@@ -68,28 +90,52 @@ const ProductDetailsScreen = () => {
 
       <Stack.Screen options={{ title: product.name }} />
 
-      <RemoteImage
-        path={product.image}
-        fallback={defaultPizzaImage}
-        style={styles.image}
-        resizeMode="contain"
-      />
+      <View
+        style={[
+          styles.imageContainer,
+          { backgroundColor: colorScheme === "dark" ? "#333" : "#eee" },
+        ]}
+      >
+        <RemoteImage
+          path={product.image}
+          fallback={defaultPizzaImage}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
 
-      <Text style={styles.title}>{product.name}</Text>
-      <Text style={styles.price}>${product.price}</Text>
+      <Text style={[styles.title, { color: Colors[colorScheme].text }]}>
+        {product.name}
+      </Text>
+      <Text style={[styles.price, { color: Colors[colorScheme].text }]}>
+        ${product.price}
+      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "white",
     flex: 1,
+    padding: 20,
+  },
+  imageContainer: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 30,
     padding: 10,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 3.84,
+    // elevation: 5,
+    backgroundColor: "#00ffff",
+    marginBottom: 20,
   },
   image: {
     width: "100%",
-    aspectRatio: 1,
+    height: "100%",
+    borderRadius: 10,
   },
   title: {
     fontSize: 20,

@@ -1,9 +1,8 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, useColorScheme } from "react-native";
 import React from "react";
-import Colors from "../constants/Colors";
-import { Tables } from "../types";
 import { defaultPizzaImage } from "./ProductListItem";
 import RemoteImage from "./RemoteImage";
+import Colors from "../constants/Colors";
 
 type OrderItemListItemProps = {
   item: {
@@ -24,6 +23,9 @@ type OrderItemListItemProps = {
 };
 
 const OrderItemListItem = ({ item }: OrderItemListItemProps) => {
+  const theme = useColorScheme();
+  const styles = createStyles(theme || "");
+
   if (!item.products) return null;
   return (
     <View style={styles.container}>
@@ -33,12 +35,11 @@ const OrderItemListItem = ({ item }: OrderItemListItemProps) => {
         style={styles.image}
         resizeMode="contain"
       />
-
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.products.name}</Text>
         <View style={styles.subtitleContainer}>
           <Text style={styles.price}>${item.products.price.toFixed(2)}</Text>
-          <Text>Size: {item.size}</Text>
+          <Text style={styles.text}>Size: {item.size}</Text>
         </View>
       </View>
       <View style={styles.quantitySelector}>
@@ -48,45 +49,55 @@ const OrderItemListItem = ({ item }: OrderItemListItemProps) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "white",
-    borderRadius: 10,
-    padding: 5,
-    paddingHorizontal: 10,
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  image: {
-    width: 75,
-    aspectRatio: 1,
-    alignSelf: "center",
-    marginRight: 10,
-  },
-  title: {
-    fontWeight: "500",
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  subtitleContainer: {
-    flexDirection: "row",
-    gap: 5,
-  },
-  quantitySelector: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  quantity: {
-    fontWeight: "500",
-    fontSize: 18,
-  },
-  price: {
-    color: Colors.light.tint,
-    fontWeight: "bold",
-  },
-});
+const createStyles = (theme: string) => {
+  const isDark = theme === "dark";
+  return StyleSheet.create({
+    container: {
+      backgroundColor: isDark ? "#333" : "#fff",
+      borderRadius: 10,
+      padding: 5,
+      paddingHorizontal: 10,
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: isDark ? "#444" : "#ccc",
+    },
+    image: {
+      width: 75,
+      aspectRatio: 1,
+      alignSelf: "center",
+      marginRight: 10,
+    },
+    title: {
+      fontWeight: "500",
+      fontSize: 16,
+      marginBottom: 5,
+      color: isDark ? "#fff" : "#000",
+    },
+    subtitleContainer: {
+      flexDirection: "row",
+      gap: 5,
+    },
+    text: {
+      color: isDark ? "#ccc" : "#000",
+    },
+    quantitySelector: {
+      flexDirection: "row",
+      gap: 10,
+      alignItems: "center",
+      marginVertical: 10,
+    },
+    quantity: {
+      fontWeight: "500",
+      fontSize: 18,
+      color: isDark ? "#fff" : "#000",
+    },
+    price: {
+      color: isDark ? Colors.dark.tint : Colors.light.tint,
+      fontWeight: "bold",
+    },
+  });
+};
 
 export default OrderItemListItem;

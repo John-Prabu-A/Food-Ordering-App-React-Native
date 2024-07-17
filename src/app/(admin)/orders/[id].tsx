@@ -7,12 +7,13 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
-import OrderItemListItem from "../../../components/OrderItemListItem";
-import OrderListItem from "../../../components/OrderListItem";
+import OrderItemListItem from "@components/OrderItemListItem";
+import OrderListItem from "@components/OrderListItem";
 import { OrderStatusList } from "@/src/types";
 import Colors from "@/src/constants/Colors";
 import { useOrderDetails, useUpdateOrder } from "@/src/api/orders";
 import { sendOrderStatusNotification } from "@/src/lib/notifications";
+import { useAuth } from "@/src/providers/AuthProvider";
 
 const OrderDetailScreen = () => {
   const { id: idString } = useLocalSearchParams();
@@ -20,7 +21,13 @@ const OrderDetailScreen = () => {
     !idString ? "" : typeof idString === "string" ? idString : idString[0]
   );
 
-  const { data: order, isLoading, error } = useOrderDetails(id);
+  const { profile } = useAuth();
+
+  const {
+    data: order,
+    isLoading,
+    error,
+  } = useOrderDetails(profile?.id || "", id);
   const { mutate: updateOrder } = useUpdateOrder();
 
   const updateStatus = async (status: string) => {
@@ -63,7 +70,7 @@ const OrderDetailScreen = () => {
         data={order.order_items}
         renderItem={({ item }) => <OrderItemListItem item={item} />}
         contentContainerStyle={{ gap: 10 }}
-        ListHeaderComponent={<OrderListItem order={order} />}
+        ListHeaderComponent={() => <OrderListItem order={order} />}
         keyExtractor={(item) => item.id.toString()}
       />
       <>

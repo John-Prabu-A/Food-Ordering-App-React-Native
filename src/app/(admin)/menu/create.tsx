@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Pressable,
+  useColorScheme,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
@@ -29,6 +30,48 @@ import RemoteImage from "@/src/components/RemoteImage";
 import { FontAwesome } from "@expo/vector-icons";
 
 const CreateProductScreen = () => {
+  const colorScheme = useColorScheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: "center",
+      padding: 20,
+      backgroundColor: colorScheme === "dark" ? "#111" : "#fff",
+    },
+    label: {
+      fontSize: 20,
+      fontWeight: "bold",
+      marginTop: 10,
+      color: colorScheme === "dark" ? "#fff" : "#000",
+    },
+    textInput: {
+      height: 40,
+      borderColor: "gray",
+      padding: 10,
+      borderWidth: 1,
+      borderRadius: 5,
+      marginTop: 10,
+      backgroundColor: colorScheme === "dark" ? "#333" : "#fff",
+      color: colorScheme === "dark" ? "#fff" : "#000",
+    },
+    image: {
+      width: "50%",
+      aspectRatio: 1,
+      borderRadius: 10,
+      marginTop: 10,
+      alignSelf: "center",
+    },
+    errorText: {
+      color: "red",
+      marginTop: 5,
+    },
+    textButton: {
+      color: "#ff2c2c",
+      textAlign: "center",
+      fontSize: 18,
+    },
+  });
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState<string | null>(null);
@@ -66,15 +109,15 @@ const CreateProductScreen = () => {
 
   const onCreate = async () => {
     const imagePath = await uploadImage();
-    // console.log("imagePath", imagePath);
+    console.log("imagePath", imagePath);
     insertProduct(
       { name, price: parseFloat(price), image: imagePath },
       {
         onSuccess: () => {
           resetFields();
-          // console.log("Success.. fields resetted.");
+          console.log("Success.. fields resetted.");
           router.back();
-          // console.log("Back..");
+          console.log("Back..");
 
           setProcessing(false);
         },
@@ -122,25 +165,23 @@ const CreateProductScreen = () => {
     setDeleting(true);
     if (updatingProduct?.image) {
       try {
-        // console.log("Attempting to delete image:", updatingProduct.image);
+        console.log("Attempting to delete image:", updatingProduct.image);
 
         const { data, error } = await supabase.storage
           .from("product-images")
           .remove([updatingProduct.image]);
 
         if (error) {
-          Alert.alert("Error deleting image:", error.message);
+          console.error("Error deleting image:", error.message);
+        } else {
+          console.log("Image deleted successfully:", data);
         }
-        // else {
-        //   Alert.alert("Image deleted successfully");
-        // }
       } catch (error: any) {
-        Alert.alert("Error checking or deleting image:", error.message);
+        console.error("Error checking or deleting image:", error.message);
       }
+    } else {
+      console.log("No image to delete.");
     }
-    // else {
-    //   console.log("No image to delete.");
-    // }
 
     deleteProduct(id, {
       onSuccess: () => {
@@ -177,7 +218,7 @@ const CreateProductScreen = () => {
       .upload(filePath, decode(base64), { contentType });
 
     if (error) {
-      Alert.alert("Error uploading image", error.message);
+      console.error("Error uploading image", error);
     }
 
     if (data) {
@@ -201,23 +242,23 @@ const CreateProductScreen = () => {
     <Formik
       initialValues={{
         id: id,
-        image: image ?? defaultPizzaImage,
+        image: image,
         name: name ?? "",
         price: price ? parseFloat(price.toString()) : 0,
       }}
       onSubmit={async () => {
-        // console.log("Submitting..");
+        console.log("Submitting..");
 
         setProcessing(true);
-        // console.log("process start..");
+        console.log("process start..");
         if (isUpdating) {
-          // console.log("Updating..");
+          console.log("Updating..");
           await onUpdate();
         } else {
-          // console.log("Creating..");
+          console.log("Creating..");
           await onCreate();
         }
-        // console.log("process end..");
+        console.log("process end..");
       }}
       validationSchema={validationSchema}
     >
@@ -244,13 +285,12 @@ const CreateProductScreen = () => {
               alignSelf: "center",
               paddingBottom: 15,
               marginBottom: 15,
+              backgroundColor: colorScheme === "dark" ? "#333" : "#eee",
+              borderRadius: 20,
             }}
           >
-            {values.image.startsWith("file://") ? (
-              <Image
-                style={styles.image}
-                source={{ uri: values.image ?? defaultPizzaImage }}
-              />
+            {values.image && values.image.startsWith("file://") ? (
+              <Image style={styles.image} source={{ uri: values.image }} />
             ) : (
               <RemoteImage
                 path={values.image}
@@ -262,17 +302,28 @@ const CreateProductScreen = () => {
             <FontAwesome
               name={"pencil-square-o"}
               size={25}
-              color="black"
+              color={
+                colorScheme === "dark" ? "rgba(0, 255, 255, 0.7)" : "black"
+              }
               style={{
                 position: "absolute",
                 right: 10,
                 bottom: 20,
-                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                backgroundColor:
+                  colorScheme === "dark"
+                    ? "rgba(128, 128, 128, 0)"
+                    : "rgba(255, 255, 255, 0.7)",
                 borderRadius: 5,
                 padding: 5,
                 paddingBottom: 2,
                 alignContent: "center",
                 justifyContent: "center",
+                textShadowColor:
+                  colorScheme === "dark"
+                    ? "rgba(255,255,255,1)"
+                    : "rgba(0,0,0,1)",
+                textShadowOffset: { width: 0.2, height: 0.2 },
+                textShadowRadius: 1,
               }}
             />
           </Pressable>
@@ -346,41 +397,3 @@ const CreateProductScreen = () => {
 };
 
 export default CreateProductScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 10,
-  },
-  label: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginTop: 10,
-  },
-  textInput: {
-    height: 40,
-    borderColor: "gray",
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 5,
-    marginTop: 10,
-    backgroundColor: "white",
-  },
-  image: {
-    width: "50%",
-    aspectRatio: 1,
-    borderRadius: 10,
-    marginTop: 10,
-    alignSelf: "center",
-  },
-  errorText: {
-    color: "red",
-    marginTop: 5,
-  },
-  textButton: {
-    color: "#ff2c2c",
-    textAlign: "center",
-    fontSize: 18,
-  },
-});

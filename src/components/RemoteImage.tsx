@@ -1,10 +1,10 @@
-import { Alert, Image } from "react-native";
-import React, { ComponentProps, useEffect, useMemo, useState } from "react";
+import { Image, ImageSourcePropType } from "react-native";
+import React, { ComponentProps, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
 type RemoteImageProps = {
   path?: string | null;
-  fallback: string;
+  fallback: ImageSourcePropType;
   bucketName?: string;
 } & Omit<ComponentProps<typeof Image>, "source">;
 
@@ -14,35 +14,50 @@ const RemoteImage = ({
   bucketName,
   ...imageProps
 }: RemoteImageProps) => {
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!path) return;
-    (async () => {
-      setImage("");
-      const { data, error } = await supabase.storage
-        .from(bucketName || "product-images")
-        .download(path);
+    if (!path) {
+      setImage(null);
+      return;
+    }
 
-      if (error) {
-        // console.log(error);
-        Alert.alert("Error", error.message);
-      }
+    const fetchImage = async () => {
+      try {
+        setImage(null);
+        const { data, error } = await supabase.storage
+          .from(bucketName || "product-images")
+          .download(path);
 
-      if (data) {
-        const fr = new FileReader();
-        fr.readAsDataURL(data);
-        fr.onload = () => {
-          setImage(fr.result as string);
-        };
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        if (data) {
+          const fr = new FileReader();
+          fr.readAsDataURL(data);
+          fr.onload = () => {
+            setImage(fr.result as string);
+          };
+        }
+      } catch (error) {
+        // Alert.alert("Error", "Error Fetching Image");
       }
-    })();
+    };
+
+    fetchImage();
   }, [path]);
+  const adjustedProps = {
+    ...imageProps,
+    style: [imageProps.style],
+  };
 
-  if (!image) {
-  }
-
-  return <Image source={{ uri: image || fallback }} {...imageProps} />;
+  return (
+    <Image
+      {...adjustedProps}
+      source={image !== null ? { uri: image } : fallback}
+    />
+  );
 };
 
 export default RemoteImage;
