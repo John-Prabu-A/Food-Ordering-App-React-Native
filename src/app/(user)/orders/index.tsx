@@ -9,7 +9,6 @@ import OrderListItem from "@/src/components/OrderListItem";
 import { useMyOrderList } from "@/src/api/orders";
 import { useUpdateOrderSubscription } from "@/src/api/orders/subscriptions";
 import { useAuth } from "@/src/providers/AuthProvider";
-
 export default function OrdersScreen() {
   const colorScheme = useColorScheme();
   const { data: orders, isLoading, error } = useMyOrderList();
@@ -32,9 +31,7 @@ export default function OrdersScreen() {
 
   return (
     <View
-      style={[
-        { backgroundColor: colorScheme === "dark" ? "#000" : "#fff", flex: 1 },
-      ]}
+      style={[{ backgroundColor: colorScheme === "dark" ? "#000" : "#fff" }]}
     >
       <FlatList
         data={orders}

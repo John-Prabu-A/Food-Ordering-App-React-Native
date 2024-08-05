@@ -3,12 +3,10 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { Redirect, Stack, useSegments } from "expo-router";
 import { Pressable, useColorScheme } from "react-native";
 import { router } from "expo-router";
-
 export default function OrdersScreen() {
   const { session, isAdmin } = useAuth();
   const segments = useSegments();
   const colorScheme = useColorScheme();
-
   if (!session) {
     return <Redirect href="/" />;
   }
@@ -18,12 +16,6 @@ export default function OrdersScreen() {
         headerTitleAlign: "center",
       }}
     >
-      <Stack.Screen
-        name="[id]"
-        options={{
-          title: `Order #${segments[2]}`,
-        }}
-      />
       <Stack.Screen
         name="index"
         options={{

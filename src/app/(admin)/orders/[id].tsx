@@ -14,22 +14,18 @@ import Colors from "@/src/constants/Colors";
 import { useOrderDetails, useUpdateOrder } from "@/src/api/orders";
 import { sendOrderStatusNotification } from "@/src/lib/notifications";
 import { useAuth } from "@/src/providers/AuthProvider";
-
 const OrderDetailScreen = () => {
   const { id: idString } = useLocalSearchParams();
   const id = parseFloat(
     !idString ? "" : typeof idString === "string" ? idString : idString[0]
   );
-
   const { profile } = useAuth();
-
   const {
     data: order,
     isLoading,
     error,
   } = useOrderDetails(profile?.id || "", id);
   const { mutate: updateOrder } = useUpdateOrder();
-
   const updateStatus = async (status: string) => {
     await updateOrder({
       id: id,
@@ -39,11 +35,10 @@ const OrderDetailScreen = () => {
       sendOrderStatusNotification({ ...order, status });
     }
   };
-
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Stack.Screen options={{ title: "Order" }} />
+        <Stack.Screen options={{ title: `Order` }} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -51,7 +46,7 @@ const OrderDetailScreen = () => {
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Stack.Screen options={{ title: "Order" }} />
+        <Stack.Screen options={{ title: `Order` }} />
         <Text>{error.message}</Text>
       </View>
     );
@@ -59,16 +54,14 @@ const OrderDetailScreen = () => {
   if (!order) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Stack.Screen options={{ title: "Order" }} />
+        <Stack.Screen options={{ title: `Order` }} />
         <Text>Order not found</Text>
       </View>
     );
   }
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: `Order #${order.id}` }} />
-
       <FlatList
         data={order.order_items}
         renderItem={({ item }) => <OrderItemListItem item={item} />}
@@ -107,12 +100,10 @@ const OrderDetailScreen = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     padding: 10,
     gap: 10,
   },
 });
-
 export default OrderDetailScreen;
