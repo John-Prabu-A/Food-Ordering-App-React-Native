@@ -59,7 +59,7 @@ const CreateProductScreen = () => {
       width: "50%",
       aspectRatio: 1,
       borderRadius: 10,
-      marginTop: 10,
+      // marginTop: 10,
       alignSelf: "center",
     },
     errorText: {
@@ -283,10 +283,13 @@ const CreateProductScreen = () => {
               // height: 100,
               justifyContent: "center",
               alignSelf: "center",
-              paddingBottom: 15,
+              alignItems: "center",
+              // paddingBottom: 15,
+              paddingTop: 0,
               marginBottom: 15,
               backgroundColor: colorScheme === "dark" ? "#333" : "#eee",
               borderRadius: 20,
+              // aspectRatio: 1,
             }}
           >
             {values.image && values.image.startsWith("file://") ? (
@@ -345,12 +348,13 @@ const CreateProductScreen = () => {
             onBlur={handleBlur("name")}
             style={styles.textInput}
             placeholder="Product Title"
+            placeholderTextColor="grey"
           />
           {touched.name && errors.name && (
             <Text style={styles.errorText}>{errors.name}</Text>
           )}
 
-          <Text style={styles.label}>Price ($)</Text>
+          <Text style={styles.label}>Price (₹)</Text>
           <TextInput
             value={values.price === 0 ? "" : values.price.toString()}
             editable={!processing}
@@ -361,6 +365,7 @@ const CreateProductScreen = () => {
             onBlur={handleBlur("price")}
             style={styles.textInput}
             placeholder="9.99"
+            placeholderTextColor="grey"
             keyboardType="numeric"
           />
           {touched.price && errors.price && (

@@ -34,7 +34,7 @@ const CartListItem = ({ cartItem }: CartListItemProps) => {
         </Text>
         <View style={styles.subtitleContainer}>
           <Text style={[styles.price, { color: Colors.light.tint }]}>
-            ${cartItem.product.price.toFixed(2)}
+            ₹{cartItem.product.price.toFixed(2)}
           </Text>
           <Text style={{ color: textColor }}>Size: {cartItem.size}</Text>
         </View>

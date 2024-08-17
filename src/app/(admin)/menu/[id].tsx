@@ -118,7 +118,7 @@ const ProductDetailsScreen = () => {
         {product.name}
       </Text>
       <Text style={[styles.price, { color: Colors[colorScheme].text }]}>
-        ${product.price}
+        ₹{product.price}
       </Text>
     </View>
   );
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 1,
     borderRadius: 30,
-    padding: 10,
+    // padding: 10,
     // shadowColor: "#000",
     // shadowOffset: { width: 0, height: 2 },
     // shadowOpacity: 0.25,

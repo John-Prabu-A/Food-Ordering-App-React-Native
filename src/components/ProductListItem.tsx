@@ -10,6 +10,7 @@ import {
 import { Link, useRouter, useSegments } from "expo-router";
 import RemoteImage from "./RemoteImage";
 import { Tables } from "../database.types";
+import { View } from "react-native";
 
 interface ProductListItemProps {
   product: Tables<"products">;
@@ -35,10 +36,12 @@ const ProductListItem = ({ product }: ProductListItemProps) => {
           path={product.image}
           fallback={defaultPizzaImage}
           style={styles.image}
-          resizeMode="contain"
+          resizeMode="cover"
         />
-        <Text style={styles.title}>{product.name}</Text>
-        <Text style={styles.price}>${product.price}</Text>
+        <View style={{ padding: 10 }}>
+          <Text style={styles.title}>{product.name}</Text>
+          <Text style={styles.price}>₹{product.price}</Text>
+        </View>
       </TouchableOpacity>
     </Link>
   );
@@ -50,12 +53,12 @@ const createStyles = (theme: string) => {
   const isDark = theme === "dark";
   return StyleSheet.create({
     container: {
-      padding: 10,
+      padding: 0,
       backgroundColor: isDark ? "#333" : "#fff",
       borderRadius: 10,
       flex: 1,
       maxWidth: "50%",
-      aspectRatio: 3 / 4,
+      // aspectRatio: 3 / 4,
       ...Platform.select({
         ios: {
           shadowColor: "#000",
@@ -83,6 +86,8 @@ const createStyles = (theme: string) => {
       width: "100%",
       aspectRatio: 1,
       borderRadius: 10,
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
     },
   });
 };

@@ -9,6 +9,7 @@ import { View } from "@/src/components/Themed";
 import OrderListItem from "@/src/components/OrderListItem";
 import { useAdminOrderList } from "@/src/api/orders";
 import { useInsertOrderSubscription } from "@/src/api/orders/subscriptions";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function OrdersScreen() {
   const colorScheme = useColorScheme();
@@ -32,6 +33,23 @@ export default function OrdersScreen() {
       </View>
     );
   }
+
+  if (!orders || (orders && orders.length === 0)) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <MaterialCommunityIcons
+          name="food"
+          size={200}
+          style={{ opacity: 0.6 }}
+          color="grey"
+        />
+        <Text style={{ color: "grey", opacity: 0.9, fontSize: 26 }}>
+          No More Active Orders!
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View
       style={[
